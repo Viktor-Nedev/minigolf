@@ -1,22 +1,22 @@
 :root {
-    --primary-hue: 160; /* Neon teal/green */
-    --c-primary: hsl(var(--primary-hue), 100%, 50%);
-    --c-primary-dim: hsla(var(--primary-hue), 100%, 50%, 0.3);
+    --primary-hue: 130; /* Grass Green */
+    --c-primary: #34c759;
+    --c-primary-dim: rgba(52, 199, 89, 0.3);
     
-    --c-bg: #090b10;
-    --c-panel: hsla(210, 20%, 15%, 0.6);
-    --c-panel-border: hsla(0, 0%, 100%, 0.1);
+    --c-bg: #8ba888; /* Outer grass/environment */
+    --c-panel: rgba(255, 255, 255, 0.85); /* Light glass */
+    --c-panel-border: rgba(255, 255, 255, 0.4);
     
-    --c-text-main: #f0f4f8;
-    --c-text-muted: #8b9eb0;
+    --c-text-main: #2c3e50;
+    --c-text-muted: #5c6c7c;
     
-    --radius-lg: 20px;
-    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-md: 10px;
     
     --font-main: 'Outfit', sans-serif;
     
-    --shadow-glow: 0 0 20px var(--c-primary-dim);
-    --shadow-panel: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    --shadow-glow: 0 4px 15px rgba(0,0,0,0.1);
+    --shadow-panel: 0 10px 30px rgba(0, 0, 0, 0.15);
 }
 
 * {
@@ -40,7 +40,7 @@ body, html {
     display: flex;
     justify-content: center;
     align-items: center;
-    background: radial-gradient(circle at center, #141c2b 0%, var(--c-bg) 100%);
+    background: radial-gradient(circle at center, #9cc498 0%, var(--c-bg) 100%);
 }
 
 #game-canvas {
@@ -48,7 +48,6 @@ body, html {
     top: 0; left: 0;
     width: 100%; height: 100%;
     z-index: 1;
-    /* subtle texture or pattern for the course background */
 }
 
 /* UI Structure */
@@ -57,7 +56,7 @@ body, html {
     top: 0; left: 0;
     width: 100%; height: 100%;
     z-index: 10;
-    pointer-events: none; /* Let canvas capture drags by default */
+    pointer-events: none;
 }
 
 .screen {
@@ -79,7 +78,7 @@ body, html {
     transform: scale(1);
 }
 
-/* Glassmorphism Panels */
+/* Light Glassmorphism Panels */
 .glass-panel {
     background: var(--c-panel);
     backdrop-filter: blur(12px);
@@ -96,14 +95,13 @@ body, html {
 
 @keyframes float {
     0% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
+    50% { transform: translateY(-5px); }
     100% { transform: translateY(0px); }
 }
 
 .glass-panel-small {
     background: var(--c-panel);
     backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
     border: 1px solid var(--c-panel-border);
     border-radius: var(--radius-lg);
     padding: 15px 30px;
@@ -112,19 +110,18 @@ body, html {
 
 /* Typography elements */
 .glow-text {
-    font-size: 3.5rem;
+    font-size: 3.2rem;
     font-weight: 700;
-    letter-spacing: 2px;
-    color: #fff;
-    text-shadow: 0 0 10px #fff, 0 0 20px var(--c-primary), 0 0 40px var(--c-primary);
+    letter-spacing: 1px;
+    color: #1a4a28;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
     margin-bottom: 5px;
 }
 
 .glow-text-small {
-    font-size: 2.5rem;
+    font-size: 2.2rem;
     font-weight: 700;
-    color: #fff;
-    text-shadow: 0 0 10px var(--c-primary);
+    color: #1a4a28;
     margin-bottom: 20px;
 }
 
@@ -132,6 +129,7 @@ body, html {
     font-size: 1.1rem;
     color: var(--c-text-muted);
     margin-bottom: 30px;
+    font-weight: 500;
 }
 
 /* Ball Selector */
@@ -140,27 +138,27 @@ body, html {
 }
 
 .ball-selector-container h3 {
-    font-weight: 500;
+    font-weight: 700;
     margin-bottom: 15px;
     color: var(--c-text-main);
-    letter-spacing: 1px;
 }
 
 .ball-options {
     display: flex;
     justify-content: center;
-    gap: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
     margin-bottom: 20px;
 }
 
 .ball-option {
-    width: 50px;
-    height: 50px;
+    width: 45px;
+    height: 45px;
     border-radius: 50%;
     cursor: pointer;
-    border: 2px solid transparent;
-    transition: all 0.3s ease;
-    box-shadow: inset -5px -5px 15px rgba(0,0,0,0.5), inset 5px 5px 15px rgba(255,255,255,0.2);
+    border: 3px solid transparent;
+    transition: all 0.2s ease;
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.3), inset -3px -3px 8px rgba(0,0,0,0.2), inset 3px 3px 8px rgba(255,255,255,0.6);
 }
 
 .ball-option:hover {
@@ -170,7 +168,7 @@ body, html {
 .ball-option.selected {
     transform: scale(1.2);
     border-color: #fff;
-    box-shadow: 0 0 20px currentColor, inset -5px -5px 15px rgba(0,0,0,0.5), inset 5px 5px 15px rgba(255,255,255,0.4);
+    box-shadow: 0 0 0 3px var(--c-primary), 2px 5px 10px rgba(0,0,0,0.3);
 }
 
 .ball-stats {
@@ -179,6 +177,9 @@ body, html {
     gap: 15px;
     font-size: 0.9rem;
     color: var(--c-text-muted);
+    background: rgba(0,0,0,0.05);
+    padding: 8px;
+    border-radius: 8px;
 }
 
 .ball-stats span {
@@ -188,39 +189,37 @@ body, html {
 
 /* Buttons */
 .primary-btn {
-    background: transparent;
-    border: 2px solid var(--c-primary);
-    color: var(--c-primary);
+    background: var(--c-primary);
+    border: none;
+    color: #fff;
     font-family: var(--font-main);
     font-size: 1.2rem;
     font-weight: 700;
     padding: 15px 40px;
     border-radius: 50px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     text-transform: uppercase;
     letter-spacing: 1px;
-    box-shadow: var(--shadow-glow);
-    position: relative;
-    overflow: hidden;
+    box-shadow: 0 6px 15px rgba(52, 199, 89, 0.4);
 }
 
 .primary-btn:hover {
-    background: var(--c-primary);
-    color: #000;
-    box-shadow: 0 0 30px var(--c-primary);
+    background: #2cb04d;
     transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(52, 199, 89, 0.5);
 }
 
 .primary-btn:active {
     transform: translateY(1px);
+    box-shadow: 0 2px 10px rgba(52, 199, 89, 0.3);
 }
 
 .menu-controls {
     margin-top: 20px;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     color: var(--c-text-muted);
-    opacity: 0.7;
+    font-weight: 500;
 }
 
 /* HUD elements */
@@ -246,11 +245,12 @@ body, html {
     color: var(--c-text-muted);
     text-transform: uppercase;
     letter-spacing: 1px;
+    font-weight: 700;
 }
 
 .hud-item .value {
     font-size: 1.5rem;
-    font-weight: 700;
+    font-weight: 800;
     color: var(--c-text-main);
 }
 
@@ -262,9 +262,8 @@ body, html {
 }
 
 .icon-btn {
-    background: var(--c-panel);
-    backdrop-filter: blur(8px);
-    border: 1px solid var(--c-panel-border);
+    background: #fff;
+    border: none;
     color: var(--c-text-main);
     font-size: 1.5rem;
     width: 60px; height: 60px;
@@ -273,13 +272,13 @@ body, html {
     display: flex;
     justify-content: center;
     align-items: center;
-    transition: all 0.3s ease;
-    box-shadow: var(--shadow-panel);
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
 .icon-btn:hover {
-    background: rgba(255,255,255,0.1);
-    transform: rotate(-45deg);
+    background: #f0f0f0;
+    transform: rotate(-45deg) scale(1.05);
 }
 
 /* Stats grid on Level Complete */
@@ -291,7 +290,7 @@ body, html {
 }
 
 .stat-box {
-    background: rgba(0,0,0,0.3);
+    background: rgba(0,0,0,0.03);
     border-radius: var(--radius-md);
     padding: 15px;
     display: flex;
@@ -299,24 +298,24 @@ body, html {
 }
 
 .stat-box.highlight {
-    background: var(--c-primary-dim);
-    border: 1px solid var(--c-primary);
+    background: rgba(52, 199, 89, 0.1);
+    border: 2px solid var(--c-primary);
 }
 
 .stat-box.highlight .value {
     color: var(--c-primary);
-    text-shadow: 0 0 10px var(--c-primary);
 }
 
 .stat-box .label {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: var(--c-text-muted);
     margin-bottom: 5px;
+    font-weight: 600;
 }
 
 .stat-box .value {
     font-size: 1.8rem;
-    font-weight: 700;
+    font-weight: 800;
 }
 
 .final-score {

@@ -1,69 +1,123 @@
 // Game Data
 const LEVELS = [
-    {   // Level 1: Simple straight
+    {   // Level 1: Welcome
         par: 2,
-        startInfo: { x: 200, y: 700 },
-        hole: { x: 200, y: 150 },
-        walls: [
-            { x: 100, y: 100, w: 200, h: 20 }, // Top
-            { x: 100, y: 120, w: 20, h: 630 }, // Left
-            { x: 280, y: 120, w: 20, h: 630 }, // Right
-            { x: 100, y: 750, w: 200, h: 20 }  // Bottom
-        ]
-    },
-    {   // Level 2: L-shape
-        par: 3,
-        startInfo: { x: 150, y: 700 },
-        hole: { x: 450, y: 150 },
-        walls: [
-            { x: 50, y: 600, w: 20, h: 150 },   // Left lower
-            { x: 50, y: 750, w: 200, h: 20 },   // Bottom
-            { x: 230, y: 300, w: 20, h: 450 },  // Inner corner right
-            { x: 250, y: 300, w: 270, h: 20 },  // Inner corner top
-            { x: 50, y: 100, w: 470, h: 20 },   // Top overall
-            { x: 50, y: 120, w: 20, h: 480 },   // Left upper
-            { x: 520, y: 120, w: 20, h: 200 },  // Right upper
-            { x: 520, y: 320, w: 20, h: 20 },   // Right cap
-        ]
-    },
-    {   // Level 3: Funnel with obstacle
-        par: 4,
         startInfo: { x: 300, y: 700 },
         hole: { x: 300, y: 150 },
         walls: [
-            // Bounds
+            { x: 150, y: 100, w: 300, h: 20 },
+            { x: 150, y: 120, w: 20, h: 630 },
+            { x: 430, y: 120, w: 20, h: 630 },
+            { x: 150, y: 750, w: 300, h: 20 }
+        ],
+        hazards: []
+    },
+    {   // Level 2: The Bend
+        par: 3,
+        startInfo: { x: 200, y: 700 },
+        hole: { x: 400, y: 200 },
+        walls: [
+            { x: 100, y: 550, w: 200, h: 20 },
+            { x: 100, y: 750, w: 200, h: 20 },
+            { x: 100, y: 570, w: 20, h: 180 },
+            { x: 280, y: 350, w: 20, h: 200 },
+            { x: 100, y: 330, w: 200, h: 20 },
+            { x: 100, y: 100, w: 400, h: 20 },
+            { x: 100, y: 120, w: 20, h: 210 },
+            { x: 500, y: 100, w: 20, h: 470 },
+            { x: 300, y: 550, w: 200, h: 20 }
+        ],
+        hazards: []
+    },
+    {   // Level 3: Sand Trap
+        par: 3,
+        startInfo: { x: 300, y: 700 },
+        hole: { x: 300, y: 150 },
+        walls: [
+            { x: 150, y: 100, w: 300, h: 20 },
+            { x: 150, y: 120, w: 20, h: 630 },
+            { x: 430, y: 120, w: 20, h: 630 },
+            { x: 150, y: 750, w: 300, h: 20 }
+        ],
+        hazards: [
+            { type: 'sand', x: 170, y: 350, w: 260, h: 150 }
+        ]
+    },
+    {   // Level 4: Oasis (Water Hazard)
+        par: 3,
+        startInfo: { x: 300, y: 700 },
+        hole: { x: 300, y: 150 },
+        walls: [
             { x: 100, y: 100, w: 400, h: 20 },
             { x: 100, y: 120, w: 20, h: 630 },
             { x: 480, y: 120, w: 20, h: 630 },
+            { x: 100, y: 750, w: 400, h: 20 }
+        ],
+        hazards: [
+            { type: 'water', x: 120, y: 300, w: 300, h: 250 },
+            { type: 'bridge', x: 260, y: 300, w: 80, h: 250 } // act as normal floor overlapping water
+        ]
+    },
+    {   // Level 5: Zig Zag
+        par: 4,
+        startInfo: { x: 150, y: 700 },
+        hole: { x: 450, y: 150 },
+        walls: [
+            { x: 100, y: 100, w: 400, h: 20 },
             { x: 100, y: 750, w: 400, h: 20 },
-            // Obstacles
-            { x: 120, y: 400, w: 150, h: 20 },
-            { x: 330, y: 400, w: 150, h: 20 },
-            { x: 250, y: 250, w: 100, h: 20 }
+            { x: 100, y: 120, w: 20, h: 630 },
+            { x: 480, y: 120, w: 20, h: 630 },
+            // obstacles
+            { x: 120, y: 550, w: 250, h: 20 },
+            { x: 230, y: 350, w: 250, h: 20 }
+        ],
+        hazards: [
+            { type: 'sand', x: 370, y: 570, w: 110, h: 180 },
+            { type: 'sand', x: 120, y: 370, w: 110, h: 180 }
+        ]
+    },
+    {   // Level 6: The Long Drive
+        par: 5,
+        startInfo: { x: 150, y: 750 },
+        hole: { x: 450, y: 100 },
+        walls: [
+            { x: 100, y: 50, w: 400, h: 20 },
+            { x: 100, y: 800, w: 400, h: 20 },
+            { x: 100, y: 70, w: 20, h: 730 },
+            { x: 480, y: 70, w: 20, h: 730 },
+            { x: 200, y: 500, w: 280, h: 20 },
+            { x: 120, y: 300, w: 280, h: 20 }
+        ],
+        hazards: [
+            { type: 'water', x: 120, y: 600, w: 150, h: 100 },
+            { type: 'water', x: 330, y: 350, w: 150, h: 100 },
+            { type: 'sand', x: 380, y: 70, w: 100, h: 100 }
         ]
     }
 ];
 
 const BALL_TYPES = [
-    { id: 'standard', name: 'Standard', color: '#ffea00', friction: 0.985, bounce: 0.7, mass: 1, glow: 'hsl(55, 100%, 50%)' },
-    { id: 'bouncy', name: 'Bouncy', color: '#00f7ff', friction: 0.99, bounce: 0.9, mass: 0.8, glow: 'hsl(182, 100%, 50%)' },
-    { id: 'heavy', name: 'Heavy', color: '#ff2a2a', friction: 0.97, bounce: 0.4, mass: 1.5, glow: 'hsl(0, 100%, 50%)' },
+    { id: 'standard', name: 'Golf', color: '#ffffff', friction: 0.985, bounce: 0.7, mass: 1 },
+    { id: 'pro', name: 'Pro', color: '#ffea00', friction: 0.980, bounce: 0.5, mass: 1 },
+    { id: 'bouncy', name: 'Bouncy', color: '#00ccff', friction: 0.990, bounce: 0.9, mass: 0.8 },
+    { id: 'heavy', name: 'Heavy', color: '#ff3333', friction: 0.975, bounce: 0.4, mass: 1.5 },
+    { id: 'light', name: 'Light', color: '#ff99cc', friction: 0.988, bounce: 0.8, mass: 0.6 }
 ];
 
 // Config & State
 const CONFIG = {
-    ballRadius: 10,
-    holeRadius: 15,
+    ballRadius: 8,
+    holeRadius: 14,
     maxPower: 25,
-    powerMultiplier: 0.1,
+    powerMultiplier: 0.12,
     stopVelocity: 0.1,
     subSteps: 10,
     courseBaseWidth: 600,
-    courseBaseHeight: 800
+    courseBaseHeight: 900
 };
 
 let state = {
-    currentScreen: 'main-menu', // main-menu, hud, level-complete, game-over
+    currentScreen: 'main-menu',
     level: 0,
     strokes: 0,
     totalStrokes: 0,
@@ -74,6 +128,9 @@ let state = {
     ball: { x: 0, y: 0, vx: 0, vy: 0 },
     hole: { x: 0, y: 0 },
     walls: [],
+    hazards: [],
+    
+    lastValidPos: { x: 0, y: 0 }, // For water hazard resets
     
     camera: { x: 0, y: 0, scale: 1 },
     
@@ -81,14 +138,13 @@ let state = {
     dragStart: { x: 0, y: 0 },
     dragCurrent: { x: 0, y: 0 },
     
-    gameState: 'idle' // idle, moving, holed
+    gameState: 'idle', // idle, moving, holed, water
+    waterTimer: 0
 };
 
 // DOM Elements
 const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
-const uiLayer = document.getElementById('ui-layer');
-
 const screens = {
     'main-menu': document.getElementById('main-menu'),
     'hud': document.getElementById('hud'),
@@ -98,19 +154,16 @@ const screens = {
 
 // UI Initialization
 function initUI() {
-    // Ball Selector
     const ballOptionsContainer = document.getElementById('ball-options');
     BALL_TYPES.forEach((ball, idx) => {
         const el = document.createElement('div');
         el.className = `ball-option ${idx === 0 ? 'selected' : ''}`;
         el.style.backgroundColor = ball.color;
-        el.style.color = ball.color; // for box-shadow currentColor
         el.onclick = () => selectBall(idx, el);
         ballOptionsContainer.appendChild(el);
     });
     updateBallStats(BALL_TYPES[0]);
 
-    // Buttons
     document.getElementById('btn-play').addEventListener('click', startGame);
     document.getElementById('btn-next-level').addEventListener('click', loadNextLevel);
     document.getElementById('btn-home').addEventListener('click', backToMenu);
@@ -122,13 +175,10 @@ function selectBall(index, element) {
     element.classList.add('selected');
     state.ballType = BALL_TYPES[index];
     updateBallStats(BALL_TYPES[index]);
-    
-    // update theme color based on ball
-    document.documentElement.style.setProperty('--c-primary', state.ballType.glow);
 }
 
 function updateBallStats(ball) {
-    let speed = ball.friction > 0.98 ? (ball.friction > 0.985 ? 'High' : 'Normal') : 'Low';
+    let speed = ball.friction > 0.985 ? 'High' : (ball.friction > 0.98 ? 'Normal' : 'Low');
     let bounce = ball.bounce > 0.6 ? (ball.bounce > 0.8 ? 'High' : 'Normal') : 'Low';
     let weight = ball.mass > 1 ? 'Heavy' : (ball.mass < 1 ? 'Light' : 'Normal');
     
@@ -160,7 +210,6 @@ function stopBall() {
 
 function loadLevel(index) {
     if (index >= LEVELS.length) {
-        // Game Over
         document.getElementById('go-score').innerText = state.totalScore > 0 ? `+${state.totalScore}` : state.totalScore;
         showScreen('game-over');
         return;
@@ -173,12 +222,11 @@ function loadLevel(index) {
     stopBall();
     
     state.hole = { ...levelData.hole };
-    state.walls = levelData.walls.map(w => ({ ...w })); // copy
+    state.walls = levelData.walls.map(w => ({ ...w }));
+    state.hazards = levelData.hazards ? levelData.hazards.map(h => ({ ...h })) : [];
     
     updateHUD();
     state.gameState = 'idle';
-    
-    // Center camera on level center roughly
     updateCamera();
 }
 
@@ -226,85 +274,88 @@ function showLevelComplete() {
     
     const highlight = document.querySelector('.stat-box.highlight');
     if (score < 0) {
-        highlight.style.borderColor = '#00ff3c';
-        highlight.querySelector('.value').style.color = '#00ff3c';
-        highlight.querySelector('.value').style.textShadow = '0 0 10px #00ff3c';
+        highlight.style.borderColor = '#13ce32';
+        highlight.querySelector('.value').style.color = '#13ce32';
     } else if (score > 0) {
-        highlight.style.borderColor = '#ff2a2a';
-        highlight.querySelector('.value').style.color = '#ff2a2a';
-        highlight.querySelector('.value').style.textShadow = '0 0 10px #ff2a2a';
+        highlight.style.borderColor = '#ff3b30';
+        highlight.querySelector('.value').style.color = '#ff3b30';
     } else {
         highlight.style.borderColor = 'var(--c-primary)';
         highlight.querySelector('.value').style.color = 'var(--c-primary)';
-        highlight.querySelector('.value').style.textShadow = '0 0 10px var(--c-primary)';
     }
 
-    setTimeout(() => {
-        showScreen('level-complete');
-    }, 500);
+    showScreen('level-complete');
+}
+
+function handleWaterHazard() {
+    state.gameState = 'water';
+    state.waterTimer = 60; // 1 second roughly at 60fps
+}
+
+function resetFromWater() {
+    state.strokes++; // Penalty stroke
+    state.ball.x = state.lastValidPos.x;
+    state.ball.y = state.lastValidPos.y;
+    state.ball.vx = 0;
+    state.ball.vy = 0;
+    updateHUD();
+    state.gameState = 'idle';
 }
 
 // Input Handling
 function setupInput() {
-    const getPos = (e) => {
+    const down = (e) => {
+        if (state.currentScreen !== 'hud' || state.gameState !== 'idle') return;
         const rect = canvas.getBoundingClientRect();
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
         
-        // Convert screen to world
-        const screenX = clientX - rect.left;
-        const screenY = clientY - rect.top;
-        
-        return {
-            x: (screenX - state.camera.x) / state.camera.scale,
-            y: (screenY - state.camera.y) / state.camera.scale
+        state.dragStart = { 
+            x: (clientX - rect.left - state.camera.x) / state.camera.scale,
+            y: (clientY - rect.top - state.camera.y) / state.camera.scale
         };
-    };
-
-    const down = (e) => {
-        if (state.currentScreen !== 'hud' || state.gameState !== 'idle') return;
-        const pos = getPos(e);
-        // check if clicked ball roughly
-        const dx = pos.x - state.ball.x;
-        const dy = pos.y - state.ball.y;
-        if (dx*dx + dy*dy < 2500) { // big hit area
-            state.isDragging = true;
-            state.dragStart = { ...pos };
-            state.dragCurrent = { ...pos };
-        }
+        state.isDragging = true;
+        state.dragCurrent = { ...state.dragStart };
     };
     
     const move = (e) => {
         if (!state.isDragging) return;
-        state.dragCurrent = getPos(e);
-        if(e.touches) e.preventDefault(); // prevent scrolling
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        
+        state.dragCurrent = {
+            x: (clientX - rect.left - state.camera.x) / state.camera.scale,
+            y: (clientY - rect.top - state.camera.y) / state.camera.scale
+        };
     };
     
     const up = () => {
         if (!state.isDragging) return;
         state.isDragging = false;
         
-        // Shoot
         const dx = state.dragStart.x - state.dragCurrent.x;
         const dy = state.dragStart.y - state.dragCurrent.y;
         
-        const force = Math.min(Math.sqrt(dx*dx + dy*dy) * CONFIG.powerMultiplier, CONFIG.maxPower);
+        const dragDist = Math.sqrt(dx*dx + dy*dy);
+        const power = Math.min(dragDist * CONFIG.powerMultiplier, CONFIG.maxPower);
         
-        if (force > 0.5) {
+        if (power > 0.5) {
+            state.lastValidPos = { x: state.ball.x, y: state.ball.y };
             const angle = Math.atan2(dy, dx);
-            state.ball.vx = Math.cos(angle) * force;
-            state.ball.vy = Math.sin(angle) * force;
+            state.ball.vx = Math.cos(angle) * power;
+            state.ball.vy = Math.sin(angle) * power;
             state.gameState = 'moving';
             state.strokes++;
             updateHUD();
         }
     };
 
-    canvas.addEventListener('mousedown', down);
+    // Robust event binding
+    window.addEventListener('mousedown', down);
     window.addEventListener('mousemove', move);
     window.addEventListener('mouseup', up);
-    
-    canvas.addEventListener('touchstart', down, {passive: false});
+    window.addEventListener('touchstart', down, {passive: false});
     window.addEventListener('touchmove', move, {passive: false});
     window.addEventListener('touchend', up);
 }
@@ -315,13 +366,10 @@ function checkCollision() {
     const radius = CONFIG.ballRadius;
     const bounce = state.ballType.bounce;
 
-    // AABB vs Circle
     for (let wall of state.walls) {
-        // Find closest point to the circle center on the rectangle
         let closestX = Math.max(wall.x, Math.min(ball.x, wall.x + wall.w));
         let closestY = Math.max(wall.y, Math.min(ball.y, wall.y + wall.h));
 
-        // Calculate distance
         let dx = ball.x - closestX;
         let dy = ball.y - closestY;
         let distanceSq = dx * dx + dy * dy;
@@ -329,26 +377,15 @@ function checkCollision() {
         if (distanceSq < radius * radius) {
             let distance = Math.sqrt(distanceSq);
             let overlap = radius - distance;
+            if (distance === 0) { overlap = radius; dx = 0; dy = 1; distance = 1; }
 
-            if (distance === 0) {
-               // Circle is exactly inside edge, push arbitrarily
-               overlap = radius;
-               dx = 0; dy = 1; distance = 1;
-            }
-
-            // Normal vector
             let nx = dx / distance;
             let ny = dy / distance;
 
-            // Resolve penetration
             ball.x += nx * overlap;
             ball.y += ny * overlap;
 
-            // Reflect velocity
-            // Vnew = V - 2(V.N)N
             let dot = ball.vx * nx + ball.vy * ny;
-            
-            // Only reflect if moving towards wall
             if (dot < 0) {
                 ball.vx = (ball.vx - 2 * dot * nx) * bounce;
                 ball.vy = (ball.vy - 2 * dot * ny) * bounce;
@@ -358,46 +395,74 @@ function checkCollision() {
 }
 
 function updatePhysics() {
+    if (state.gameState === 'water') {
+        state.waterTimer--;
+        if (state.waterTimer <= 0) resetFromWater();
+        return;
+    }
+
     if (state.gameState !== 'moving') return;
 
-    const friction = state.ballType.friction;
-    
-    // Sub-steps for better collision stability
+    let currentFriction = state.ballType.friction;
+    let inWater = false;
+    let inSand = false;
+    let onBridge = false;
+
+    // Check hazards based on ball center
+    for (let h of state.hazards) {
+        if (state.ball.x > h.x && state.ball.x < h.x + h.w &&
+            state.ball.y > h.y && state.ball.y < h.y + h.h) {
+            if (h.type === 'bridge') onBridge = true;
+            else if (h.type === 'sand') inSand = true;
+            else if (h.type === 'water') inWater = true;
+        }
+    }
+
+    if (onBridge) {
+        inWater = false; // Bridge cancels water
+    }
+
+    if (inWater) {
+        // Splash!
+        handleWaterHazard();
+        return;
+    }
+
+    if (inSand) {
+        currentFriction = 0.93; // High friction for sand
+    }
+
     const dt = 1 / CONFIG.subSteps;
     
     for (let i = 0; i < CONFIG.subSteps; i++) {
         state.ball.x += state.ball.vx * dt;
         state.ball.y += state.ball.vy * dt;
         
-        // Continuous friction
-        state.ball.vx *= Math.pow(friction, dt);
-        state.ball.vy *= Math.pow(friction, dt);
+        state.ball.vx *= Math.pow(currentFriction, dt);
+        state.ball.vy *= Math.pow(currentFriction, dt);
         
         checkCollision();
     }
 
-    // Check Hole
+    // Checking hole
     const dx = state.ball.x - state.hole.x;
     const dy = state.ball.y - state.hole.y;
     const distSq = dx*dx + dy*dy;
-    const holeGrabDist = CONFIG.holeRadius;
-
-    // Check if slow enough and close to hole
     const speedSq = state.ball.vx*state.ball.vx + state.ball.vy*state.ball.vy;
     
-    if (distSq < holeGrabDist * holeGrabDist && speedSq < (CONFIG.maxPower * 0.4)*(CONFIG.maxPower * 0.4)) {
-        // Gravity towards hole center to suck it in visually
-        state.ball.vx += -dx * 0.05;
-        state.ball.vy += -dy * 0.05;
+    if (distSq < CONFIG.holeRadius * CONFIG.holeRadius && speedSq < (CONFIG.maxPower * 0.4)*(CONFIG.maxPower * 0.4)) {
+        state.ball.vx *= 0.8; // dampen heavily
+        state.ball.vy *= 0.8;
+        state.ball.vx += -dx * 0.08;
+        state.ball.vy += -dy * 0.08;
         
-        if (distSq < 10) { // close enough to center
+        if (distSq < 15 && speedSq < 2) { 
             stopBall();
             state.ball.x = state.hole.x;
             state.ball.y = state.hole.y;
             showLevelComplete();
         }
-    } else {
-        // Stop if slow enough
+    } else if (!inWater) {
         if (speedSq < CONFIG.stopVelocity * CONFIG.stopVelocity) {
             stopBall();
         }
@@ -411,101 +476,192 @@ function resize() {
 }
 
 function updateCamera() {
-    // Basic camera centered on the course (600x800)
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     
-    // Fit to screen
-    const scaleX = canvas.width / (CONFIG.courseBaseWidth + 100);
-    const scaleY = canvas.height / (CONFIG.courseBaseHeight + 100);
+    // Fit course vertically with padding
+    const scaleX = canvas.width / (CONFIG.courseBaseWidth + 50);
+    const scaleY = canvas.height / (CONFIG.courseBaseHeight + 50);
     state.camera.scale = Math.min(scaleX, scaleY);
     
-    // Center it
     state.camera.x = canvas.width / 2 - (CONFIG.courseBaseWidth / 2) * state.camera.scale;
     state.camera.y = canvas.height / 2 - (CONFIG.courseBaseHeight / 2) * state.camera.scale;
 }
 
 
+// Rendering Helpers
+function drawRoundedRect(x, y, w, h, radius, fill, stroke) {
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + w - radius, y);
+    ctx.arcTo(x + w, y, x + w, y + radius, radius);
+    ctx.lineTo(x + w, y + h - radius);
+    ctx.arcTo(x + w, y + h, x + w - radius, y + h, radius);
+    ctx.lineTo(x + radius, y + h);
+    ctx.arcTo(x, y + h, x, y + h - radius, radius);
+    ctx.lineTo(x, y + radius);
+    ctx.arcTo(x, y, x + radius, y, radius);
+    
+    if (fill) {
+        ctx.fillStyle = fill;
+        ctx.fill();
+    }
+    if (stroke) {
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    }
+}
+
 // Rendering
 function render() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Camera Transform
     ctx.save();
     ctx.translate(state.camera.x, state.camera.y);
     ctx.scale(state.camera.scale, state.camera.scale);
 
-    // Grid / Background (optional subtle texture)
     if (state.currentScreen === 'hud' || state.gameState === 'holed') {
-         // Draw walls
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = '#000000';
-        for (let wall of state.walls) {
-            // Neon edge style walls
-            ctx.fillStyle = '#0a101d'; // dark filling
-            ctx.fillRect(wall.x, wall.y, wall.w, wall.h);
-            
-            ctx.strokeStyle = '#22385a';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(wall.x, wall.y, wall.w, wall.h);
-
-            // Glow logic could go here but limits perf
+        
+        // Draw Grass bounding box based on walls extents
+        let minX = 9999, minY = 9999, maxX = -9999, maxY = -9999;
+        state.walls.forEach(w => {
+            if(w.x < minX) minX = w.x; if(w.y < minY) minY = w.y;
+            if(w.x+w.w > maxX) maxX = w.x+w.w; if(w.y+w.h > maxY) maxY = w.y+w.h;
+        });
+        
+        // Base grass playing area (light green)
+        if (minX < maxX) {
+             drawRoundedRect(minX, minY, maxX - minX, maxY - minY, 10, '#5ebd3e', false);
         }
-        ctx.shadowBlur = 0;
 
-        // Draw hole
-        ctx.beginPath();
-        ctx.arc(state.hole.x, state.hole.y, CONFIG.holeRadius, 0, Math.PI * 2);
-        ctx.fillStyle = '#050a10';
-        ctx.fill();
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = '#000';
-        ctx.stroke();
-
-        // Draw aiming line
-        if (state.isDragging && state.gameState === 'idle') {
-            const dx = state.dragStart.x - state.dragCurrent.x;
-            const dy = state.dragStart.y - state.dragCurrent.y;
-            const forceDist = Math.sqrt(dx*dx + dy*dy);
-            const force = Math.min(forceDist * CONFIG.powerMultiplier, CONFIG.maxPower);
-            
-            if (force > 0.5) {
-                const angle = Math.atan2(dy, dx);
-                
-                // Draw dots
-                const aimLength = force * 15; // Visual length
-                ctx.beginPath();
-                ctx.setLineDash([5, 15]);
-                ctx.moveTo(state.ball.x, state.ball.y);
-                ctx.lineTo(state.ball.x + Math.cos(angle) * aimLength, state.ball.y + Math.sin(angle) * aimLength);
-                
-                // Coloring based on power
-                const ratio = force / CONFIG.maxPower;
-                ctx.strokeStyle = `hsl(${(1-ratio) * 120}, 100%, 50%)`;
-                ctx.lineWidth = 3;
-                ctx.stroke();
-                ctx.setLineDash([]);
+        // Hazards
+        for (let h of state.hazards) {
+            if (h.type === 'sand') {
+                drawRoundedRect(h.x, h.y, h.w, h.h, 15, '#e4cd85', '#d4bc74');
+                // Sand texture dots
+                ctx.fillStyle = '#c7b068';
+                for(let i=0; i<h.w*h.h/500; i++){
+                    ctx.fillRect(h.x + Math.random()*h.w, h.y + Math.random()*h.h, 2, 2);
+                }
+            } else if (h.type === 'water') {
+                drawRoundedRect(h.x, h.y, h.w, h.h, 10, '#3ca1df', '#288ec9');
+            } else if (h.type === 'bridge') {
+                drawRoundedRect(h.x, h.y, h.w, h.h, 0, '#c29d6d', '#8b663b');
+                // wooden planks
+                ctx.strokeStyle = '#a68254';
+                for (let yy = h.y; yy < h.y + h.h; yy += 20) {
+                    ctx.beginPath(); ctx.moveTo(h.x, yy); ctx.lineTo(h.x + h.w, yy); ctx.stroke();
+                }
             }
         }
 
-        // Draw Ball
-        ctx.beginPath();
-        ctx.arc(state.ball.x, state.ball.y, CONFIG.ballRadius, 0, Math.PI * 2);
-        ctx.fillStyle = state.ballType.color;
-        
-        // Ball Neon Glow
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = state.ballType.glow;
-        ctx.fill();
-        ctx.shadowBlur = 0;
+        // Walls (Brick / Wood look)
+        for (let wall of state.walls) {
+            ctx.fillStyle = '#8c4e0b'; // wood/brick tone
+            ctx.fillRect(wall.x, wall.y, wall.w, wall.h);
+            ctx.strokeStyle = '#5c3205';
+            ctx.strokeRect(wall.x, wall.y, wall.w, wall.h);
+            
+            // Texture
+            ctx.fillStyle = '#a35a0c';
+            if (wall.w > wall.h) {
+                // horizontal
+                ctx.fillRect(wall.x, wall.y + 4, wall.w, 4);
+                ctx.fillRect(wall.x, wall.y + 12, wall.w, 4);
+            } else {
+                // vertical
+                ctx.fillRect(wall.x + 4, wall.y, 4, wall.h);
+                ctx.fillRect(wall.x + 12, wall.y, 4, wall.h);
+            }
+        }
 
-        // Ball highlight
+        // Hole
         ctx.beginPath();
-        ctx.arc(state.ball.x - 3, state.ball.y - 3, CONFIG.ballRadius * 0.3, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.arc(state.hole.x, state.hole.y, CONFIG.holeRadius, 0, Math.PI * 2);
+        ctx.fillStyle = '#0a1a0f';
         ctx.fill();
-    } else {
-         // Main menu background deco maybe?
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = '#224a27';
+        ctx.stroke();
+
+        // Flag (if not holed)
+        if (state.gameState !== 'holed') {
+            ctx.fillStyle = '#ccc';
+            ctx.fillRect(state.hole.x - 2, state.hole.y - 35, 4, 35);
+            ctx.fillStyle = '#ff2a2a';
+            ctx.beginPath();
+            ctx.moveTo(state.hole.x + 2, state.hole.y - 35);
+            ctx.lineTo(state.hole.x + 20, state.hole.y - 25);
+            ctx.lineTo(state.hole.x + 2, state.hole.y - 15);
+            ctx.fill();
+        }
+
+        // Aiming Arrow
+        if (state.isDragging && state.gameState === 'idle') {
+            const dx = state.dragStart.x - state.dragCurrent.x;
+            const dy = state.dragStart.y - state.dragCurrent.y;
+            const dragDist = Math.sqrt(dx*dx + dy*dy);
+            const power = Math.min(dragDist * CONFIG.powerMultiplier, CONFIG.maxPower);
+            
+            if (power > 0.5) {
+                const angle = Math.atan2(dy, dx);
+                
+                const arrowLen = power * 6; // visual scaling
+                const endX = state.ball.x + Math.cos(angle) * arrowLen;
+                const endY = state.ball.y + Math.sin(angle) * arrowLen;
+                
+                // Color based on power
+                const ratio = power / CONFIG.maxPower;
+                let r = Math.min(255, ratio * 2 * 255);
+                let g = Math.min(255, (1 - ratio) * 2 * 255);
+                ctx.strokeStyle = `rgb(${r}, ${g}, 0)`;
+                ctx.fillStyle = `rgb(${r}, ${g}, 0)`;
+                ctx.lineWidth = 4;
+                
+                // Line
+                ctx.beginPath();
+                ctx.moveTo(state.ball.x, state.ball.y);
+                ctx.lineTo(endX, endY);
+                ctx.stroke();
+                
+                // Arrowhead
+                ctx.beginPath();
+                ctx.moveTo(endX, endY);
+                ctx.lineTo(endX - Math.cos(angle - 0.5) * 15, endY - Math.sin(angle - 0.5) * 15);
+                ctx.lineTo(endX - Math.cos(angle + 0.5) * 15, endY - Math.sin(angle + 0.5) * 15);
+                ctx.fill();
+            }
+        }
+
+        // Ball with shadow
+        if (state.gameState !== 'water') { // hide ball if sunk? Or show splash.
+            // Shadow
+            ctx.beginPath();
+            ctx.arc(state.ball.x + 2, state.ball.y + 4, CONFIG.ballRadius, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            ctx.fill();
+
+            // Ball
+            ctx.beginPath();
+            ctx.arc(state.ball.x, state.ball.y, CONFIG.ballRadius, 0, Math.PI * 2);
+            ctx.fillStyle = state.ballType.color;
+            ctx.fill();
+
+            // Highlight
+            ctx.beginPath();
+            ctx.arc(state.ball.x - 2, state.ball.y - 2, CONFIG.ballRadius * 0.4, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.fill();
+        } else {
+            // Splash effect
+            ctx.fillStyle = 'rgba(255,255,255,0.8)';
+            ctx.beginPath(); ctx.arc(state.ball.x, state.ball.y, 10 + (60-state.waterTimer)*0.5, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = '#3ca1df';
+            ctx.beginPath(); ctx.arc(state.ball.x, state.ball.y, 8 + (60-state.waterTimer)*0.4, 0, Math.PI*2);
+            ctx.fill();
+        }
     }
 
     ctx.restore();
@@ -517,7 +673,6 @@ function loop() {
     requestAnimationFrame(loop);
 }
 
-// Boot
 window.onload = () => {
     initUI();
     setupInput();
