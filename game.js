@@ -1,97 +1,135 @@
 // Game Data
 const LEVELS = [
-    {   // Level 1: Welcome
+    {   // Level 1: Straight Shot
         par: 2,
-        startInfo: { x: 300, y: 700 },
-        hole: { x: 300, y: 150 },
+        startInfo: { x: 300, y: 800 },
+        hole: { x: 300, y: 100 },
         walls: [
-            { x: 150, y: 100, w: 300, h: 20 },
-            { x: 150, y: 120, w: 20, h: 630 },
-            { x: 430, y: 120, w: 20, h: 630 },
-            { x: 150, y: 750, w: 300, h: 20 }
+            { x: 50, y: 50, w: 20, h: 800 }, { x: 530, y: 50, w: 20, h: 800 }, // Sides
+            { x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }  // Top/Bottom
         ],
         hazards: []
     },
-    {   // Level 2: The Bend
+    {   // Level 2: The Dogleg
         par: 3,
-        startInfo: { x: 200, y: 700 },
-        hole: { x: 400, y: 200 },
-        walls: [
-            { x: 100, y: 550, w: 200, h: 20 },
-            { x: 100, y: 750, w: 200, h: 20 },
-            { x: 100, y: 570, w: 20, h: 180 },
-            { x: 280, y: 350, w: 20, h: 200 },
-            { x: 100, y: 330, w: 200, h: 20 },
-            { x: 100, y: 100, w: 400, h: 20 },
-            { x: 100, y: 120, w: 20, h: 210 },
-            { x: 500, y: 100, w: 20, h: 470 },
-            { x: 300, y: 550, w: 200, h: 20 }
-        ],
-        hazards: []
-    },
-    {   // Level 3: Sand Trap
-        par: 3,
-        startInfo: { x: 300, y: 700 },
-        hole: { x: 300, y: 150 },
-        walls: [
-            { x: 150, y: 100, w: 300, h: 20 },
-            { x: 150, y: 120, w: 20, h: 630 },
-            { x: 430, y: 120, w: 20, h: 630 },
-            { x: 150, y: 750, w: 300, h: 20 }
-        ],
-        hazards: [
-            { type: 'sand', x: 170, y: 350, w: 260, h: 150 }
-        ]
-    },
-    {   // Level 4: Oasis (Water Hazard)
-        par: 3,
-        startInfo: { x: 300, y: 700 },
-        hole: { x: 300, y: 150 },
-        walls: [
-            { x: 100, y: 100, w: 400, h: 20 },
-            { x: 100, y: 120, w: 20, h: 630 },
-            { x: 480, y: 120, w: 20, h: 630 },
-            { x: 100, y: 750, w: 400, h: 20 }
-        ],
-        hazards: [
-            { type: 'water', x: 120, y: 300, w: 300, h: 250 },
-            { type: 'bridge', x: 260, y: 300, w: 80, h: 250 } // act as normal floor overlapping water
-        ]
-    },
-    {   // Level 5: Zig Zag
-        par: 4,
-        startInfo: { x: 150, y: 700 },
+        startInfo: { x: 150, y: 800 },
         hole: { x: 450, y: 150 },
         walls: [
-            { x: 100, y: 100, w: 400, h: 20 },
-            { x: 100, y: 750, w: 400, h: 20 },
-            { x: 100, y: 120, w: 20, h: 630 },
-            { x: 480, y: 120, w: 20, h: 630 },
-            // obstacles
-            { x: 120, y: 550, w: 250, h: 20 },
-            { x: 230, y: 350, w: 250, h: 20 }
+            { x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 },
+            { x: 50, y: 70, w: 20, h: 800 }, { x: 530, y: 70, w: 20, h: 800 },
+            { x: 250, y: 300, w: 300, h: 20 }, // Corner block
+            { x: 50, y: 600, w: 300, h: 20 }
+        ],
+        hazards: []
+    },
+    {   // Level 3: Sand Pit
+        par: 3,
+        startInfo: { x: 300, y: 800 },
+        hole: { x: 300, y: 100 },
+        walls: [
+            { x: 100, y: 50, w: 400, h: 20 }, { x: 100, y: 850, w: 400, h: 20 },
+            { x: 100, y: 70, w: 20, h: 780 }, { x: 480, y: 70, w: 20, h: 780 }
         ],
         hazards: [
-            { type: 'sand', x: 370, y: 570, w: 110, h: 180 },
-            { type: 'sand', x: 120, y: 370, w: 110, h: 180 }
+            { type: 'sand', x: 200, y: 300, w: 200, h: 300 }
         ]
     },
-    {   // Level 6: The Long Drive
-        par: 5,
-        startInfo: { x: 150, y: 750 },
-        hole: { x: 450, y: 100 },
+    {   // Level 4: The Bridge
+        par: 4,
+        startInfo: { x: 300, y: 800 },
+        hole: { x: 300, y: 100 },
         walls: [
-            { x: 100, y: 50, w: 400, h: 20 },
-            { x: 100, y: 800, w: 400, h: 20 },
-            { x: 100, y: 70, w: 20, h: 730 },
-            { x: 480, y: 70, w: 20, h: 730 },
-            { x: 200, y: 500, w: 280, h: 20 },
-            { x: 120, y: 300, w: 280, h: 20 }
+            { x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 },
+            { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 }
         ],
         hazards: [
-            { type: 'water', x: 120, y: 600, w: 150, h: 100 },
-            { type: 'water', x: 330, y: 350, w: 150, h: 100 },
-            { type: 'sand', x: 380, y: 70, w: 100, h: 100 }
+            { type: 'water', x: 70, y: 350, w: 460, h: 250 },
+            { type: 'bridge', x: 250, y: 350, w: 100, h: 250 }
+        ]
+    },
+    {   // Level 5: Pillars
+        par: 4,
+        startInfo: { x: 300, y: 800 },
+        hole: { x: 300, y: 150 },
+        walls: [
+            { x: 100, y: 50, w: 400, h: 20 }, { x: 100, y: 850, w: 400, h: 20 },
+            { x: 100, y: 70, w: 20, h: 780 }, { x: 480, y: 70, w: 20, h: 780 },
+            { x: 220, y: 400, w: 40, h: 40 }, { x: 340, y: 400, w: 40, h: 40 },
+            { x: 220, y: 250, w: 40, h: 40 }, { x: 340, y: 250, w: 40, h: 40 }
+        ],
+        hazards: []
+    },
+    {   // Level 6: Zig-Zag Alley
+        par: 5,
+        startInfo: { x: 100, y: 800 },
+        hole: { x: 500, y: 100 },
+        walls: [
+            { x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 },
+            { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 },
+            { x: 50, y: 600, w: 400, h: 20 },
+            { x: 150, y: 400, w: 400, h: 20 },
+            { x: 50, y: 200, w: 400, h: 20 }
+        ],
+        hazards: []
+    },
+    {   // Level 7: Water Islands
+        par: 4,
+        startInfo: { x: 300, y: 800 },
+        hole: { x: 300, y: 100 },
+        walls: [
+            { x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 },
+            { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 }
+        ],
+        hazards: [
+            { type: 'water', x: 70, y: 300, w: 200, h: 200 },
+            { type: 'water', x: 330, y: 300, w: 200, h: 200 },
+            { type: 'sand', x: 250, y: 150, w: 100, h: 100 }
+        ]
+    },
+    {   // Level 8: The Maze
+        par: 5,
+        startInfo: { x: 100, y: 800 },
+        hole: { x: 500, y: 800 },
+        walls: [
+            { x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 },
+            { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 },
+            { x: 200, y: 200, w: 20, h: 650 },
+            { x: 350, y: 50, w: 20, h: 650 }
+        ],
+        hazards: []
+    },
+    {   // Level 9: Bounce Pass
+        par: 3,
+        startInfo: { x: 300, y: 800 },
+        hole: { x: 300, y: 100 },
+        walls: [
+            { x: 100, y: 50, w: 400, h: 20 }, { x: 100, y: 850, w: 400, h: 20 },
+            { x: 100, y: 70, w: 20, h: 780 }, { x: 480, y: 70, w: 20, h: 780 },
+            { x: 200, y: 400, w: 200, h: 20 } // Barrier in middle
+        ],
+        hazards: [
+            { type: 'sand', x: 120, y: 100, w: 360, h: 100 }
+        ]
+    },
+    {   // Level 10: The Grand Finale (Unblocked path)
+        par: 6,
+        startInfo: { x: 100, y: 800 },
+        hole: { x: 500, y: 100 },
+        walls: [
+            { x: 30, y: 30, w: 540, h: 20 }, { x: 30, y: 870, w: 540, h: 20 },
+            { x: 30, y: 50, w: 20, h: 820 }, { x: 550, y: 50, w: 20, h: 820 }
+            // Removed the blocking separator wall
+        ],
+        hazards: [
+            // Water on the sides
+            { type: 'water', x: 50, y: 400, w: 180, h: 250 },
+            { type: 'water', x: 370, y: 400, w: 180, h: 250 },
+            // Wide Bridges in the center area
+            { type: 'bridge', x: 230, y: 350, w: 140, h: 180 },
+            { type: 'bridge', x: 230, y: 550, w: 140, h: 180 },
+            // Sand traps (not blocking)
+            { type: 'sand', x: 450, y: 50, w: 100, h: 100 },
+            { type: 'sand', x: 350, y: 150, w: 150, h: 50 }
         ]
     }
 ];
