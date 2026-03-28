@@ -1,0 +1,8 @@
+# Supabase credentials (HIDDEN FROM GITHUB)
+config.js
+.env
+
+# Other sensitive files
+node_modules/
+.DS_Store
+dist/

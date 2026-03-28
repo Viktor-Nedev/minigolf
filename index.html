@@ -3,40 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Classic Mini Golf</title>
+    <title>Classic Mini Golf Supabase Multiplayer</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    
+    <!-- Supabase SDK (Realtime focus) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <div id="game-container">
-        <!-- Background Canvas for static elements if needed -->
         <canvas id="game-canvas"></canvas>
 
-        <!-- UI Layer -->
         <div id="ui-layer">
-            
             <!-- Main Menu -->
             <div id="main-menu" class="screen active">
                 <div class="glass-panel">
                     <h1 class="glow-text">MINI GOLF</h1>
-                    <p class="subtitle">A Realistic Mini Golf Experience</p>
+                    <p class="subtitle">Supabase Realtime Multiplayer</p>
                     
+                    <div id="lobby-section">
+                        <input type="text" id="room-id" value="global-room" placeholder="Enter Room ID" class="input-field">
+                        <div class="menu-buttons">
+                            <button id="btn-create-game" class="primary-btn">JOIN ROOM</button>
+                        </div>
+                    </div>
+
                     <div class="ball-selector-container">
                         <h3>Select Your Ball</h3>
                         <div class="ball-options" id="ball-options">
                             <!-- Populated by JS -->
                         </div>
-                        <div class="ball-stats" id="ball-stats">
-                            <div>Speed: <span id="stat-speed"></span></div>
-                            <div>Bounce: <span id="stat-bounce"></span></div>
-                            <div>Weight: <span id="stat-weight"></span></div>
-                        </div>
                     </div>
 
-                    <button id="btn-play" class="primary-btn">PLAY NOW</button>
-                    <div class="menu-controls">
-                        <span>Drag to aim • Release to shoot</span>
-                    </div>
+                    <p id="connection-status" class="status-text">Disconnected (Supabase)</p>
                 </div>
             </div>
 
@@ -44,18 +43,19 @@
             <div id="hud" class="screen">
                 <div class="hud-top glass-panel-small">
                     <div class="hud-item">
-                        <span class="label">LEVEL</span>
-                        <span class="value" id="hud-level">1/5</span>
+                        <span class="label">P1 (YOU)</span>
+                        <span class="value" id="hud-p1-strokes">0</span>
                     </div>
                     <div class="hud-item">
-                        <span class="label">STROKES</span>
-                        <span class="value" id="hud-strokes">0</span>
+                        <span class="label">P2 (OPPONENT)</span>
+                        <span class="value" id="hud-p2-strokes">0</span>
                     </div>
-                    <div class="hud-item">
-                        <span class="label">PAR</span>
-                        <span class="value" id="hud-par">3</span>
+                    <div class="hud-item highlight-turn" id="turn-indicator">
+                        <span class="label">TURN</span>
+                        <span class="value" id="hud-turn-name">WAITING...</span>
                     </div>
                 </div>
+                <div class="hud-level-info">LEVEL <span id="hud-level-num">1</span></div>
                 <button id="btn-restart" class="secondary-btn icon-btn" title="Restart Level">↻</button>
             </div>
 
@@ -68,35 +68,22 @@
                             <span class="label">Par</span>
                             <span class="value" id="lc-par">3</span>
                         </div>
-                        <div class="stat-box">
-                            <span class="label">Strokes</span>
-                            <span class="value" id="lc-strokes">1</span>
+                        <div class="stat-box" id="p1-final-box">
+                            <span class="label">P1</span>
+                            <span class="value" id="lc-p1-strokes">0</span>
                         </div>
-                        <div class="stat-box highlight">
-                            <span class="label">Score</span>
-                            <span class="value" id="lc-score">-2</span>
+                        <div class="stat-box" id="p2-final-box">
+                            <span class="label">P2</span>
+                            <span class="value" id="lc-p2-strokes">0</span>
                         </div>
                     </div>
-                    <button id="btn-next-level" class="primary-btn">NEXT HOLE</button>
+                    <p class="subtitle" id="lc-wait-msg">Waiting for opponent...</p>
                 </div>
             </div>
-
-            <!-- Game Over Screen -->
-            <div id="game-over" class="screen">
-                <div class="glass-panel">
-                    <h2 class="glow-text">COURSE COMPLETE</h2>
-                    <div class="final-score">
-                        <span class="label">Total Score</span>
-                        <span class="value glow-text-small" id="go-score">0</span>
-                    </div>
-                    <p id="go-message" class="subtitle">Amazing performance!</p>
-                    <button id="btn-home" class="primary-btn">MAIN MENU</button>
-                </div>
-            </div>
-
         </div>
     </div>
     
+    <script src="config.js"></script>
     <script src="game.js"></script>
 </body>
 </html>
