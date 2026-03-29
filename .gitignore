@@ -1,6 +1,6 @@
 # Supabase credentials (HIDDEN FROM GITHUB)
+# Project Config
 config.js
-.env
 
 # Other sensitive files
 node_modules/

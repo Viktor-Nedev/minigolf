@@ -1,11 +1,14 @@
-// Config and Setup
 const sbConfig = {
-    url: window.PROJECT_CONFIG?.SUPABASE_URL || "",
+    url: window.PROJECT_CONFIG?.SUPABASE_URL || "", // Local config file
     anonKey: window.PROJECT_CONFIG?.SUPABASE_ANON_KEY || ""
 };
 
 let supabaseClient; let channel;
-try { supabaseClient = supabase.createClient(sbConfig.url, sbConfig.anonKey); } catch (e) { console.warn("Supabase configuration missing or invalid"); }
+try { 
+    supabaseClient = supabase.createClient(sbConfig.url, sbConfig.anonKey); 
+} catch(e) { 
+    console.warn("Supabase configuration missing or invalid. Check config.js or Vercel Environment Variables."); 
+}
 
 // --- DATA ---
 const LEVELS = [

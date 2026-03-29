@@ -307,7 +307,16 @@
         </div>
     </div>
     
-    <script src="config.js"></script>
+    <script>
+        // Fallback if config.js is missing in production/Vercel
+        if (typeof window.PROJECT_CONFIG === 'undefined') {
+            window.PROJECT_CONFIG = {
+                SUPABASE_URL: "", 
+                SUPABASE_ANON_KEY: ""
+            };
+        }
+    </script>
+    <script src="config.js" onerror="console.log('Using environment fallbacks')"></script>
     <script src="game.js"></script>
 </body>
 </html>
