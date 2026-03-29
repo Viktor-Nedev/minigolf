@@ -26,6 +26,9 @@
 
     --radius-large: 24px;
     --radius-medium: 16px;
+
+    --cursor-default: url('images/golfstick.png') 8 0, auto;
+    --cursor-pointer: url('images/golfstick.png') 8 0, pointer;
 }
 
 * {
@@ -45,6 +48,25 @@ html {
     color: var(--text-dark);
     user-select: none;
     -webkit-user-select: none;
+    cursor: var(--cursor-default);
+}
+
+button,
+.btn-nav,
+.menu-card,
+.icon-btn,
+.lb-trigger-btn,
+.lb-grid-item,
+.ball-icon,
+.color-chip,
+.premium-slider,
+.fun-select,
+.fun-input,
+input,
+select,
+option,
+a {
+    cursor: var(--cursor-pointer);
 }
 
 #game-container {
