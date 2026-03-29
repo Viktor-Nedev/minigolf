@@ -1650,3 +1650,30 @@ h4 {
 }
 .lb-loading { text-align: center; color: #cbd5e0; padding: 40px 0; font-size: 1.2rem; }
 
+/* Mission Board Styles */
+.mission-board-panel { max-width: 950px; background: #fff; padding: 3rem; }
+.mission-desc { font-family: var(--font-heading); color: #718096; margin-bottom: 30px; font-size: 1.1rem; }
+.missions-3-col-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+
+.mission-card-premium {
+    background: #f8fafc; border: 3px solid #edf2f7; border-radius: 20px;
+    padding: 25px; text-align: left; transition: 0.3s; position: relative;
+    display: flex; flex-direction: column; gap: 15px; min-height: 220px;
+}
+.mission-card-premium:hover { border-color: var(--btn-blue); transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+
+.m-title { font-family: var(--font-heading); font-size: 1.3rem; color: #2d3748; }
+.m-goal { font-family: var(--font-body); font-weight: 700; color: #718096; font-size: 0.95rem; line-height: 1.4; flex-grow: 1; }
+
+.m-progress-container { margin: 10px 0; }
+.m-bar-root { height: 10px; background: #e2e8f0; border-radius: 5px; overflow: hidden; margin-bottom: 5px; }
+.m-bar-fill { height: 100%; background: var(--btn-purple); transition: 0.5s ease-out; }
+.m-txt { font-weight: 800; font-size: 0.85rem; color: #a0aec0; display: block; text-align: right; }
+
+.m-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+.m-reward-tag { background: #ebf8ff; color: #3182ce; padding: 5px 12px; border-radius: 10px; font-family: var(--font-heading); font-size: 0.9rem; font-weight: 900; }
+.btn-claim { 
+    background: var(--btn-green); color: white; border: none; padding: 8px 15px; border-radius: 10px;
+    font-family: var(--font-heading); cursor: pointer; animation: missionPulse 1.5s infinite;
+}
+@keyframes missionPulse { 0% { box-shadow: 0 0 0 0 rgba(72, 187, 120, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(72, 187, 120, 0); } 100% { box-shadow: 0 0 0 0 rgba(72, 187, 120, 0); } }

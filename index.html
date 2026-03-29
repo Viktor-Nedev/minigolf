@@ -82,7 +82,12 @@
                         <span class="card-icon">🎁</span>
                         <span class="card-title">REWARDS</span>
                     </button>
-                    <button class="menu-card btn-nav delay-5" data-target="screen-leaderboard"
+                    <button class="menu-card btn-nav delay-5" data-target="screen-missions"
+                        style="--card-color: #f06292;">
+                        <span class="card-icon">🎯</span>
+                        <span class="card-title">MISSIONS</span>
+                    </button>
+                    <button class="menu-card btn-nav delay-6" data-target="screen-leaderboard"
                         style="--card-color: #FF5722;">
                         <span class="card-icon">🏆</span>
                         <span class="card-title">LEADERBOARD</span>
@@ -102,53 +107,15 @@
             <!-- 4. MISSIONS -->
             <div id="screen-missions" class="screen">
                 <button class="back-btn btn-nav" data-target="screen-main-menu">↩ BACK</button>
-                <h2 class="page-title">CHALLENGES</h2>
-                <div class="missions-grid-container">
-                    <!-- Column 1 -->
-                    <div class="mission-column">
-                        <div class="mission-card" id="mission-1">
-                            <div class="mission-info">
-                                <h3>First Flight</h3>
-                                <p>Shoot your first ball</p>
-                                <div class="progress-bar">
-                                    <div class="fill" style="width: 100%;"></div>
-                                </div>
-                            </div>
-                            <div class="mission-reward">🎁 50 Coins</div>
-                        </div>
-                        <div class="mission-card" id="mission-2">
-                            <div class="mission-info">
-                                <h3>Hole in One</h3>
-                                <p>Get a hole-in-one</p>
-                                <div class="progress-bar">
-                                    <div class="fill" style="width: 0%;"></div>
-                                </div>
-                            </div>
-                            <div class="mission-reward">⚽ Bouncy Ball</div>
-                        </div>
-                    </div>
-                    <!-- Column 2 -->
-                    <div class="mission-column">
-                        <div class="mission-card" id="mission-3">
-                            <div class="mission-info">
-                                <h3>King of Sand</h3>
-                                <p>Hit 5 sand traps</p>
-                                <div class="progress-bar">
-                                    <div class="fill" style="width: 20%;"></div>
-                                </div>
-                            </div>
-                            <div class="mission-reward">⚽ Heavy Rock</div>
-                        </div>
-                        <div class="mission-card" id="mission-4">
-                            <div class="mission-info">
-                                <h3>Win it All</h3>
-                                <p>Finish 10 levels</p>
-                                <div class="progress-bar">
-                                    <div class="fill" style="width: 10%;"></div>
-                                </div>
-                            </div>
-                            <div class="mission-reward">⚽ Neon Ball</div>
-                        </div>
+                <div class="panel mission-board-panel pop-in">
+                    <h2 class="page-title">DAILY CHALLENGES</h2>
+                    <p class="mission-desc">Complete missions to earn 25 points each!</p>
+                    
+                    <div class="missions-3-col-grid" id="active-missions-container">
+                        <!-- Dynamic columns -->
+                        <div class="mission-card-premium" id="m-slot-0"></div>
+                        <div class="mission-card-premium" id="m-slot-1"></div>
+                        <div class="mission-card-premium" id="m-slot-2"></div>
                     </div>
                 </div>
             </div>

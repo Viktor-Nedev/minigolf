@@ -97,6 +97,7 @@ let state = {
     roomId: null,
     selectedColor: '#ffffff',
     selectedBallIdx: 0,
+    activeMissions: [], // { id, type, goal, progress, target }
 
     game: {
         levelIdx: 0,
@@ -140,6 +141,8 @@ function loadLocalData() {
             state.points = data.points || 0;
             state.levelStars = data.levelStars || [];
             state.missionStats = data.missionStats || { holesPlayed: 0, sandHits: 0, levelsFinished: 0, totalStrokes: 0, starsEarned: 0 };
+            state.activeMissions = data.activeMissions || [];
+            if (state.activeMissions.length === 0) populateMissions();
             state.selectedColor = data.selectedColor || '#ffffff';
             state.selectedBallIdx = data.selectedBallIdx || 0;
             if (state.game.players.p1) {
@@ -159,6 +162,7 @@ function saveLocalData() {
             points: state.points,
             levelStars: state.levelStars,
             missionStats: state.missionStats,
+            activeMissions: state.activeMissions,
             selectedColor: state.selectedColor,
             selectedBallIdx: state.selectedBallIdx
         }));
@@ -170,7 +174,74 @@ function refreshPointsDisplay() {
     if (el) el.innerText = state.points;
     const btn = document.getElementById('btn-spin');
     if (btn) btn.disabled = (state.points < 100);
+    
+    if (state.activeMissions.length === 0) populateMissions();
+    refreshMissionsUI();
 }
+
+const MISSION_POOL = [
+    { id: 'm1', title: 'Hole Hunter', desc: 'Finish 3 levels', type: 'holes', target: 3 },
+    { id: 'm2', title: 'Sand Specialist', desc: 'Hit 4 sand traps', type: 'sand', target: 4 },
+    { id: 'm3', title: 'Star Student', desc: 'Earn 6 stars total', type: 'stars', target: 6 },
+    { id: 'm4', title: 'Precision Play', desc: 'Finish a hole in 1 shot', type: 'perfect', target: 1 },
+    { id: 'm5', title: 'Power Hitter', desc: 'Hit the ball 20 times', type: 'hits', target: 20 },
+    { id: 'm6', title: 'Course Master', desc: 'Finish 8 holes total', type: 'holes', target: 8 },
+    { id: 'm7', title: 'Golden Arm', desc: 'Finish with 3 stars', type: 'winStars', target: 1 },
+    { id: 'm8', title: 'Avoid the Beach', desc: 'Hit 8 sand traps', type: 'sand', target: 8 }
+];
+
+function populateMissions() {
+    state.activeMissions = [];
+    const pool = [...MISSION_POOL];
+    for (let i = 0; i < 3; i++) {
+        const idx = Math.floor(Math.random() * pool.length);
+        const m = pool.splice(idx, 1)[0];
+        state.activeMissions.push({ ...m, progress: 0 });
+    }
+}
+
+function updateMissionProgress(type, val = 1) {
+    state.activeMissions.forEach(m => {
+        if (m.type === type && m.progress < m.target) {
+            m.progress = Math.min(m.target, m.progress + val);
+        }
+    });
+    saveLocalData();
+}
+
+function refreshMissionsUI() {
+    state.activeMissions.forEach((m, i) => {
+        const slot = document.getElementById(`m-slot-${i}`);
+        if (!slot) return;
+        const isDone = m.progress >= m.target;
+        const perc = (m.progress / m.target) * 100;
+        
+        slot.innerHTML = `
+            <div class="m-title">${m.title}</div>
+            <div class="m-goal">${m.desc}</div>
+            <div class="m-progress-container">
+                <div class="m-bar-root"><div class="m-bar-fill" style="width: ${perc}%"></div></div>
+                <span class="m-txt">${Math.floor(m.progress)}/${m.target}</span>
+            </div>
+            <div class="m-footer">
+                <span class="m-reward-tag">+25 PTS</span>
+                ${isDone ? `<button class="btn-claim" onclick="claimMission(${i})">CLAIM</button>` : ''}
+            </div>
+        `;
+    });
+}
+
+window.claimMission = (idx) => {
+    state.points += 25;
+    // Replace with new mission
+    const currentIds = state.activeMissions.map(m => m.id);
+    const available = MISSION_POOL.filter(m => !currentIds.includes(m.id));
+    const newM = available[Math.floor(Math.random() * available.length)];
+    state.activeMissions[idx] = { ...newM, progress: 0 };
+    
+    saveLocalData();
+    refreshPointsDisplay();
+};
 
 function refreshLevelGrid() {
     const lg = document.getElementById('level-grid');
@@ -219,7 +290,7 @@ function showScreen(id) {
     state.screen = id;
     if (id === 'screen-profile') refreshProfileStats();
     if (id === 'screen-levels') refreshLevelGrid();
-    if (id === 'screen-rewards' || id === 'screen-main-menu') refreshPointsDisplay();
+    if (id === 'screen-rewards' || id === 'screen-main-menu' || id === 'screen-missions') refreshPointsDisplay();
     if (id === 'screen-balls') refreshBallsUI();
     if (id === 'screen-leaderboard') {
         const firstGridItem = document.querySelector('.lb-grid-item');
@@ -825,8 +896,11 @@ function showLevelComplete() {
             state.missionStats.starsEarned += (earned - prevStars);
             state.levelStars[state.game.levelIdx] = earned;
         }
-        state.missionStats.holesPlayed++;
         state.missionStats.totalStrokes += strokes;
+        updateMissionProgress('holes', 1);
+        updateMissionProgress('stars', earned);
+        if (earned === 3) updateMissionProgress('winStars', 1);
+        if (strokes === 1) updateMissionProgress('perfect', 1);
         saveLocalData();
         
         // UI Stars
@@ -908,6 +982,7 @@ function setupInput() {
             p.vy = Math.sin(Math.atan2(dy, dx)) * pwr;
             p.state = 'moving';
             p.strokes++;
+            updateMissionProgress('hits', 1);
 
             refreshHUD();
             if (state.mode === 'multi') {
@@ -954,10 +1029,15 @@ function updatePhysics() {
     lvl.hazards.forEach(h => {
         if (p.x > h.x && p.x < h.x + h.w && p.y > h.y && p.y < h.y + h.h) {
             if (h.type === 'bridge') onBridge = true;
-            else if (h.type === 'sand') inSand = true;
+            else if (h.type === 'sand') {
+                if (!p.wasInSand) updateMissionProgress('sand', 1);
+                inSand = true;
+            }
             else if (h.type === 'water') inWater = true;
         }
     });
+
+    p.wasInSand = inSand;
 
     if (onBridge) inWater = false;
 
