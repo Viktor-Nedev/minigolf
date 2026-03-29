@@ -4,10 +4,10 @@ const sbConfig = {
 };
 
 let supabaseClient; let channel;
-try { 
-    if (sbConfig.url) supabaseClient = supabase.createClient(sbConfig.url, sbConfig.anonKey); 
-} catch(e) { 
-    console.warn("Supabase configuration missing or invalid."); 
+try {
+    if (sbConfig.url) supabaseClient = supabase.createClient(sbConfig.url, sbConfig.anonKey);
+} catch (e) {
+    console.warn("Supabase configuration missing or invalid.");
 }
 
 let particles = [];
@@ -84,7 +84,7 @@ const CONFIG = { ballRadius: 10, holeRadius: 15, maxPower: 25, powerMultiplier: 
 
 let state = {
     screen: 'screen-splash',
-    mode: 'menu', 
+    mode: 'menu',
     volume: 80,
     username: 'Guest',
     unlockedBalls: ['standard', 'pro', 'bouncy', 'heavy', 'neon'],
@@ -92,7 +92,7 @@ let state = {
     points: 0,
     levelStars: [], // [0]=3 stars, [1]=2 stars etc.
     missionStats: { holesPlayed: 0, sandHits: 0, levelsFinished: 0, totalStrokes: 0, starsEarned: 0 },
-    myRole: 'p1', 
+    myRole: 'p1',
     playersReady: {},
     roomId: null,
     selectedColor: '#ffffff',
@@ -151,7 +151,7 @@ function loadLocalData() {
             }
             refreshPointsDisplay();
         }
-    } catch(e){}
+    } catch (e) { }
 }
 
 function saveLocalData() {
@@ -166,7 +166,7 @@ function saveLocalData() {
             selectedColor: state.selectedColor,
             selectedBallIdx: state.selectedBallIdx
         }));
-    } catch(e){}
+    } catch (e) { }
 }
 
 function refreshPointsDisplay() {
@@ -174,7 +174,7 @@ function refreshPointsDisplay() {
     if (el) el.innerText = state.points;
     const btn = document.getElementById('btn-spin');
     if (btn) btn.disabled = (state.points < 100);
-    
+
     if (state.activeMissions.length === 0) populateMissions();
     refreshMissionsUI();
 }
@@ -215,7 +215,7 @@ function refreshMissionsUI() {
         if (!slot) return;
         const isDone = m.progress >= m.target;
         const perc = (m.progress / m.target) * 100;
-        
+
         slot.innerHTML = `
             <div class="m-title">${m.title}</div>
             <div class="m-goal">${m.desc}</div>
@@ -238,7 +238,7 @@ window.claimMission = (idx) => {
     const available = MISSION_POOL.filter(m => !currentIds.includes(m.id));
     const newM = available[Math.floor(Math.random() * available.length)];
     state.activeMissions[idx] = { ...newM, progress: 0 };
-    
+
     saveLocalData();
     refreshPointsDisplay();
 };
@@ -251,7 +251,7 @@ function refreshLevelGrid() {
         d.className = 'level-box';
         const stars = state.levelStars[i] || 0;
         let sHtml = '';
-        for(let j=0; j<3; j++) sHtml += `<span class="${j < stars ? 'earned' : ''}">★</span>`;
+        for (let j = 0; j < 3; j++) sHtml += `<span class="${j < stars ? 'earned' : ''}">★</span>`;
         d.innerHTML = `<div>${i + 1}</div><div class="level-stars">${sHtml}</div>`;
         d.onclick = () => { startSoloGame(i); };
         lg.appendChild(d);
@@ -262,7 +262,7 @@ function refreshProfileStats() {
     const holes = state.missionStats.holesPlayed || 0;
     const strokes = state.missionStats.totalStrokes || 0;
     const stars = state.missionStats.starsEarned || 0;
-    
+
     document.getElementById('p-holes').innerText = holes;
     document.getElementById('p-strokes').innerText = strokes;
     document.getElementById('p-stars').innerText = stars;
@@ -290,7 +290,10 @@ function showScreen(id) {
     state.screen = id;
     if (id === 'screen-profile') refreshProfileStats();
     if (id === 'screen-levels') refreshLevelGrid();
-    if (id === 'screen-rewards' || id === 'screen-main-menu' || id === 'screen-missions') refreshPointsDisplay();
+    if (id === 'screen-rewards' || id === 'screen-main-menu' || id === 'screen-missions') {
+        refreshPointsDisplay();
+        if (id === 'screen-rewards') renderRouletteWheel();
+    }
     if (id === 'screen-balls') refreshBallsUI();
     if (id === 'screen-leaderboard') {
         const firstGridItem = document.querySelector('.lb-grid-item');
@@ -298,9 +301,144 @@ function showScreen(id) {
     }
 }
 
+// --- REWARDS & SPIN LOGIC ---
+let isSpinning = false;
+let wheelRotation = 0;
+
+const renderRouletteWheel = () => {
+    const wheel = document.getElementById('roulette-inner');
+    if (!wheel) return;
+
+    // Filter to only show LOCKED colors
+    const lockedColors = COLOR_CATALOG.filter(c => !state.unlockedColors.includes(c.hex));
+    if (lockedColors.length === 0) {
+        wheel.style.background = "#ddd";
+        return;
+    }
+
+    let gradientParts = [];
+    const sliceSize = 360 / lockedColors.length;
+    lockedColors.forEach((c, i) => {
+        gradientParts.push(`${c.hex} ${i * sliceSize}deg ${(i + 1) * sliceSize}deg`);
+    });
+    wheel.style.background = `conic-gradient(${gradientParts.join(', ')})`;
+    // Don't apply total wheelRotation here to avoid jumps when entering screen
+    // Instead just use 0 or leave as is. Let's use 0.
+    wheel.style.transition = 'none';
+    wheel.style.transform = `rotate(0deg)`;
+    wheelRotation = 0;
+    setTimeout(() => wheel.style.transition = '', 50);
+};
+
+const spinRoulette = () => {
+    if (isSpinning || state.points < 100) return; 
+
+
+    const lockedColors = COLOR_CATALOG.filter(c => !state.unlockedColors.includes(c.hex));
+    if (lockedColors.length === 0) {
+        alert("Wow! You unlocked ALL colors!");
+        return;
+    }
+
+    isSpinning = true;
+    state.points -= 100;
+
+    refreshPointsDisplay();
+    saveLocalData();
+
+    const wheel = document.getElementById('roulette-inner');
+    const resultBox = document.getElementById('roulette-result');
+
+    const winColorIdx = Math.floor(Math.random() * lockedColors.length);
+    const winColor = lockedColors[winColorIdx];
+
+    const sliceSize = 360 / lockedColors.length;
+    const destRotation = 360 - (winColorIdx * sliceSize) - (sliceSize / 2);
+
+    // Add 8-12 full spins
+    const totalSpins = (8 + Math.floor(Math.random() * 4)) * 360;
+    wheelRotation = totalSpins + destRotation;
+
+    wheel.style.transition = 'transform 5s cubic-bezier(0.15, 0, 0.1, 1)';
+    wheel.style.transform = `rotate(${wheelRotation}deg)`;
+    resultBox.innerText = '...';    setTimeout(() => {
+        state.unlockedColors.push(winColor.hex);
+        saveLocalData();
+        resultBox.style.backgroundColor = winColor.hex;
+        resultBox.innerText = '✓';
+        isSpinning = false;
+        
+        showRewardModal(winColor);
+        renderRouletteWheel();
+    }, 5200);
+};
+
+const spawnRewardConfetti = () => {
+    const cont = document.getElementById('modal-confetti');
+    if (!cont) return;
+    cont.innerHTML = '';
+    for (let i = 0; i < 50; i++) {
+        const c = document.createElement('div');
+        c.className = 'confetti-piece';
+        c.style.left = Math.random() * 100 + '%';
+        c.style.animationDelay = Math.random() * 1.5 + 's';
+        c.style.backgroundColor = `hsl(${Math.random() * 360}, 80%, 60%)`;
+        cont.appendChild(c);
+    }
+};
+
+const showRewardModal = (colorData) => {
+    const modal = document.getElementById('screen-reward-won');
+    const swatch = document.getElementById('reward-swatch');
+    const name = document.getElementById('reward-color-name');
+    
+    swatch.style.backgroundColor = colorData.hex;
+    name.innerText = colorData.name.toUpperCase();
+    
+    // Crucial: Use 'active' class for general screen visibility and remove 'hidden'
+    modal.classList.add('active');
+    modal.classList.remove('hidden');
+    spawnRewardConfetti();
+
+    // Create celebration particles (Fountain)
+    for (let i = 0; i < 30; i++) {
+        const p = document.createElement('div');
+        p.className = 'reward-particle';
+        p.style.left = '50%';
+        p.style.top = '50%';
+        p.style.backgroundColor = colorData.hex;
+
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 50 + Math.random() * 150;
+        const tx = Math.cos(angle) * dist;
+        const ty = Math.sin(angle) * dist;
+
+        modal.appendChild(p);
+
+        p.animate([
+            { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
+            { transform: `translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px)) scale(0)`, opacity: 0 }
+        ], {
+            duration: 1000 + Math.random() * 1000,
+            easing: 'cubic-bezier(0, .9, .57, 1)',
+            fill: 'forwards'
+        });
+
+        setTimeout(() => p.remove(), 2000);
+    }
+};
+
 function initUI() {
     loadLocalData();
     refreshLevelGrid();
+
+    document.getElementById('btn-collect-reward').addEventListener('click', () => {
+        const modal = document.getElementById('screen-reward-won');
+        modal.classList.remove('active');
+        modal.classList.add('hidden');
+    });
+
+    document.getElementById('btn-spin').addEventListener('click', spinRoulette);
 
     // Nav Buttons
     document.querySelectorAll('.btn-nav').forEach(btn => {
@@ -318,15 +456,15 @@ function initUI() {
     // Sync Usernames
     const mainNameInput = document.getElementById('username-input');
     const profileNameInput = document.getElementById('p-username-input');
-    
+
     const updateName = (val) => {
         state.username = val.trim() || 'Guest';
         if (mainNameInput) mainNameInput.value = state.username;
         if (profileNameInput) profileNameInput.value = state.username;
-        
+
         const av = document.getElementById('p-avatar-circle');
         if (av) av.innerText = (state.username[0] || 'P').toUpperCase();
-        
+
         const mn = document.getElementById('main-mini-name');
         if (mn) mn.innerText = state.username;
         const ma = document.getElementById('main-mini-avatar');
@@ -341,10 +479,10 @@ function initUI() {
     // Nav Bindings
     document.querySelectorAll('.btn-nav').forEach(btn => {
         btn.addEventListener('click', () => {
-             const target = btn.getAttribute('data-target');
-             if (target === 'screen-leaderboard') {
-                 // Already handled in showScreen but good to have
-             }
+            const target = btn.getAttribute('data-target');
+            if (target === 'screen-leaderboard') {
+                // Already handled in showScreen but good to have
+            }
         });
     });
 
@@ -449,41 +587,9 @@ function initUI() {
         saveLocalData();
     };
 
-    // --- REWARDS & SPIN LOGIC ---
-    let isSpinning = false;
-    const spinRoulette = () => {
-        if (isSpinning || state.points < 100) return;
-        
-        const lockedColors = COLOR_CATALOG.filter(c => !state.unlockedColors.includes(c.hex));
-        if (lockedColors.length === 0) {
-            alert("Wow! You unlocked ALL colors!");
-            return;
-        }
-
-        isSpinning = true;
-        state.points -= 100;
-        refreshPointsDisplay();
-        saveLocalData();
-
-        const wheel = document.getElementById('roulette-inner');
-        const resultBox = document.getElementById('roulette-result');
-        const winColor = lockedColors[Math.floor(Math.random() * lockedColors.length)];
-
-        // Visual "Spin" animation via rotation
-        const extraRot = 360 * 5; // 5 full spins
-        const finalRot = extraRot + (Math.random() * 360);
-        wheel.style.transform = `rotate(${finalRot}deg)`;
-
-        // After 4s (matching CSS transition)
-        setTimeout(() => {
-            state.unlockedColors.push(winColor.hex);
-            saveLocalData();
-            resultBox.style.backgroundColor = winColor.hex;
-            resultBox.innerText = '✓';
-            isSpinning = false;
-            alert(`UNLOCKED: ${winColor.name.toUpperCase()}!`);
-        }, 4000);
-    };
+    document.getElementById('btn-collect-reward').addEventListener('click', () => {
+        document.getElementById('screen-reward-won').classList.add('hidden');
+    });
 
     document.getElementById('btn-spin').addEventListener('click', spinRoulette);
 
@@ -492,7 +598,7 @@ function initUI() {
     // Multiplayer bindings
     document.getElementById('btn-join-room').addEventListener('click', joinLobby);
     document.getElementById('btn-ready').addEventListener('click', toggleReady);
-    
+
     // Auto-generate a room code when entering the multiplayer screen
     document.querySelector('.btn-nav[data-target="screen-multiplayer"]').addEventListener('click', () => {
         document.getElementById('room-input').value = generateRoomCode();
@@ -520,7 +626,7 @@ function initUI() {
     // Sliders
     const volMaster = document.getElementById('vol-master');
     if (volMaster) volMaster.addEventListener('input', (e) => state.volume = e.target.value);
-    
+
     const volMusic = document.getElementById('vol-music');
     if (volMusic) volMusic.addEventListener('input', (e) => {
         // Logic for music volume if needed
@@ -578,7 +684,7 @@ async function joinLobby() {
     const code = document.getElementById('room-input').value.trim() || 'party1';
     state.username = name;
     state.roomId = code;
-    
+
     if (!supabaseClient) { alert("Supabase config invalid"); return; }
 
     document.getElementById('mp-join-section').classList.add('hidden');
@@ -599,7 +705,7 @@ async function joinLobby() {
                 if (pres[k][0]) arr.push({ key: k, joinedAt: pres[k][0].joinedAt, ballColor: pres[k][0].ballColor, uName: pres[k][0].uName || 'Guest' });
             }
             arr = arr.sort((a, b) => a.joinedAt - b.joinedAt); // Sort by join time
-            
+
             // Assign roles 1-4 based on order
             state.game.activePlayers = [];
             document.querySelectorAll('.player-slot').forEach(el => {
@@ -607,7 +713,7 @@ async function joinLobby() {
                 el.querySelector('.slot-name').innerText = 'Empty';
                 el.querySelector('.status-badge').innerText = '';
             });
-            
+
             arr.forEach((p, idx) => {
                 if (idx > 3) return; // Only 4 players max
                 const role = `p${idx + 1}`;
@@ -631,7 +737,7 @@ async function joinLobby() {
                     }
                 }
             });
-            
+
             updateLobbyUI();
             document.getElementById('mp-status').innerText = `You are ${state.myRole?.toUpperCase() || 'Spectating'}`;
             if (state.myRole !== 'p1') document.getElementById('lobby-level-select').disabled = true;
@@ -688,7 +794,7 @@ function broadcastLobby(payload) {
 
 function checkAllReady() {
     if (state.myRole !== 'p1') return; // Only host (P1) starts
-    
+
     const joinedRoles = state.game.activePlayers;
     if (joinedRoles.length === 0) return;
 
@@ -822,8 +928,8 @@ function checkLevelEnd() {
         refreshPointsDisplay();
         saveLocalData();
 
-        setTimeout(() => { 
-            showLevelComplete(); 
+        setTimeout(() => {
+            showLevelComplete();
             saveScoreToSupabase(); // Save local player score
         }, 1000);
     }
@@ -834,12 +940,12 @@ async function saveScoreToSupabase() {
     const p1 = state.game.players['p1'];
     const { error } = await supabaseClient
         .from('scores')
-        .insert([{ 
-            username: state.username, 
-            level_idx: state.game.levelIdx + 1, 
-            strokes: p1.strokes 
+        .insert([{
+            username: state.username,
+            level_idx: state.game.levelIdx + 1,
+            strokes: p1.strokes
         }]);
-    
+
     if (error) console.error("Score save error:", error);
 }
 
@@ -847,16 +953,16 @@ async function refreshLeaderboard(lvlIdx) {
     if (!supabaseClient) return;
     const list = document.getElementById('lb-list');
     list.innerHTML = `<div class="lb-loading">Searching for champions of Level ${lvlIdx + 1}...</div>`;
-    
+
     const { data, error } = await supabaseClient
         .from('scores')
         .select('*')
         .eq('level_idx', lvlIdx + 1)
         .order('strokes', { ascending: true })
         .limit(20);
-    
+
     if (error) { list.innerHTML = "Error loading leaderboard."; return; }
-    
+
     if (data.length === 0) {
         list.innerHTML = `<div class="lb-loading" style="color: #a0aec0">No one has finished this level yet. Be the first!</div>`;
         return;
@@ -900,7 +1006,7 @@ function showLevelComplete() {
         let earned = 1;
         if (strokes <= currentPar) earned = 3;
         else if (strokes <= currentPar + 1) earned = 2;
-        
+
         let prevStars = state.levelStars[state.game.levelIdx] || 0;
         if (earned > prevStars) {
             state.missionStats.starsEarned += (earned - prevStars);
@@ -912,12 +1018,12 @@ function showLevelComplete() {
         if (earned === 3) updateMissionProgress('winStars', 1);
         if (strokes === 1) updateMissionProgress('perfect', 1);
         saveLocalData();
-        
+
         // UI Animated Stars Pop-in (Centered)
         const starsCont = document.getElementById('lc-stars-container');
         if (starsCont) {
             starsCont.innerHTML = '';
-            for(let i=1; i<=earned; i++) {
+            for (let i = 1; i <= earned; i++) {
                 const s = document.createElement('span');
                 s.className = 'v-star s-hidden';
                 s.innerText = '★';
@@ -925,7 +1031,7 @@ function showLevelComplete() {
                 setTimeout(() => s.classList.remove('s-hidden'), 600 + (i * 300));
             }
         }
-        
+
         const nextBtn = document.getElementById('btn-next-level');
         if (nextBtn) nextBtn.style.display = 'block';
     } else {
@@ -943,21 +1049,21 @@ function triggerConfetti() {
     const cont = document.getElementById('confetti-container');
     if (!cont) return;
     cont.innerHTML = '';
-    for(let i=0; i<40; i++) {
+    for (let i = 0; i < 40; i++) {
         const c = document.createElement('div');
         c.className = 'confetti-piece';
-        c.style.left = Math.random()*100 + '%';
-        c.style.animationDelay = Math.random()*2 + 's';
-        c.style.backgroundColor = `hsl(${Math.random()*360}, 70%, 50%)`;
+        c.style.left = Math.random() * 100 + '%';
+        c.style.animationDelay = Math.random() * 2 + 's';
+        c.style.backgroundColor = `hsl(${Math.random() * 360}, 70%, 50%)`;
         cont.appendChild(c);
     }
 }
 
 function spawnHoleParticles(x, y, color) {
-    for(let i = 0; i < 25; i++) {
+    for (let i = 0; i < 25; i++) {
         particles.push({
             x: x, y: y,
-            vx: (Math.random() - 0.5) * 12, 
+            vx: (Math.random() - 0.5) * 12,
             vy: (Math.random() - 0.5) * 12 - 3,
             life: 1.0, color: color
         });
@@ -1150,12 +1256,12 @@ function render() {
     ctx.fillRect(-10, -10, CONFIG.courseBaseWidth + 20, CONFIG.courseBaseHeight + 20);
     ctx.fillStyle = '#4e9c45'; // Lush Grass
     ctx.fillRect(0, 0, CONFIG.courseBaseWidth, CONFIG.courseBaseHeight);
-    
+
     // Grid/Texture effect
     ctx.strokeStyle = 'rgba(0,0,0,0.03)';
     ctx.lineWidth = 1;
-    for(let i=0; i<CONFIG.courseBaseWidth; i+=40) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,CONFIG.courseBaseHeight); ctx.stroke(); }
-    for(let i=0; i<CONFIG.courseBaseHeight; i+=40) { ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(CONFIG.courseBaseWidth,i); ctx.stroke(); }
+    for (let i = 0; i < CONFIG.courseBaseWidth; i += 40) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, CONFIG.courseBaseHeight); ctx.stroke(); }
+    for (let i = 0; i < CONFIG.courseBaseHeight; i += 40) { ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(CONFIG.courseBaseWidth, i); ctx.stroke(); }
 
     // Outer Fence
     ctx.strokeStyle = '#3d2516';
@@ -1214,7 +1320,7 @@ function render() {
         const rawDy = state.dragStart.y - state.dragCurrent.y;
         const dist = Math.sqrt(rawDx * rawDx + rawDy * rawDy);
         const power = Math.min(dist * CONFIG.powerMultiplier, CONFIG.maxPower);
-        
+
         // Clamp visual arrow length to max 120px
         const maxLen = 140;
         const angle = Math.atan2(rawDy, rawDx);
@@ -1232,14 +1338,14 @@ function render() {
         ctx.moveTo(p.x, p.y);
         ctx.lineTo(p.x + dx, p.y + dy);
         ctx.stroke();
-        
+
         // Arrow Head
         const head = 15;
         ctx.beginPath();
         ctx.moveTo(p.x + dx, p.y + dy);
-        ctx.lineTo(p.x + dx - head * Math.cos(angle - Math.PI/6), p.y + dy - head * Math.sin(angle - Math.PI/6));
+        ctx.lineTo(p.x + dx - head * Math.cos(angle - Math.PI / 6), p.y + dy - head * Math.sin(angle - Math.PI / 6));
         ctx.moveTo(p.x + dx, p.y + dy);
-        ctx.lineTo(p.x + dx - head * Math.cos(angle + Math.PI/6), p.y + dy - head * Math.sin(angle + Math.PI/6));
+        ctx.lineTo(p.x + dx - head * Math.cos(angle + Math.PI / 6), p.y + dy - head * Math.sin(angle + Math.PI / 6));
         ctx.stroke();
     }
 

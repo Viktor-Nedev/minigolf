@@ -373,10 +373,19 @@ h4 {
 }
 
 .card-icon {
-    font-size: 5rem;
-    /* Increased from 4rem */
-    text-shadow: 3px 3px 0 rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 110px;
 }
+
+.menu-icon-img {
+    width: 110px;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 5px 10px rgba(0,0,0,0.2));
+}
+
 
 .card-title {
     font-family: var(--font-heading);
@@ -1781,5 +1790,141 @@ h4 {
     transform: scale(1.08);
     box-shadow: 0 0 25px rgba(255,255,255,0.6);
     z-index: 5;
+}
+
+/* --- ROULETTE & REWARDS IMPROVEMENTS --- */
+.roulette-container {
+    position: relative;
+    width: 250px;
+    height: 250px;
+    margin: 40px auto;
+}
+
+.roulette-wheel {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 8px solid white;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2), inset 0 0 40px rgba(0,0,0,0.1);
+    position: relative;
+    transition: transform 4.5s cubic-bezier(0.15, 0, 0.15, 1);
+    background: #f7fafc;
+    overflow: hidden;
+}
+
+.pointer {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 2.5rem;
+    color: #ffc107;
+    z-index: 10;
+    text-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    pointer-events: none;
+}
+
+.result-box {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60px;
+    height: 60px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.8rem;
+    font-weight: bold;
+    box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    z-index: 5;
+    border: 4px solid #f7fafc;
+}
+
+/* Modal Overlay Layer */
+.screen-overlay {
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.reward-card {
+    text-align: center;
+    padding: 3rem;
+    max-width: 450px;
+    width: 95%;
+    position: relative;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.reward-title-white {
+    color: white;
+    text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    font-size: 3.5rem;
+    margin-bottom: 0.5rem;
+}
+
+
+.reward-glow {
+    position: absolute;
+    top: -50%; left: -50%; width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(255,193,7,0.2) 0%, transparent 60%);
+    animation: rotateGlow 10s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes rotateGlow { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+
+.reward-swatch {
+    width: 120px; height: 120px;
+    margin: 20px auto;
+    border-radius: 50%;
+    border: 8px solid white;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    transform: scale(1.1);
+}
+
+.reward-info { margin-bottom: 25px; }
+.reward-info h3 { color: white; text-shadow: 0 2px 5px rgba(0,0,0,0.2); font-size: 2rem; }
+.reward-label { color: rgba(255,255,255,0.7); font-size: 0.75rem; letter-spacing: 1px; font-weight: bold; }
+.gold-btn { background: linear-gradient(135deg, #ECC94B 0%, #D69E2E 100%); color: white; border-radius: 12px; font-weight: 900; }
+
+.gold-text {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+
+.reward-particle {
+    position: absolute;
+    width: 8px; height: 8px;
+    background: gold;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 1001;
+}
+
+@keyframes tick-vibrate {
+    0% { transform: translateX(-50%) rotate(0deg); }
+    50% { transform: translateX(-50%) rotate(-15deg); }
+    100% { transform: translateX(-50%) rotate(0deg); }
+}
+
+.pop-in-bounce {
+    animation: rewardPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes rewardPop {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
 }
 
