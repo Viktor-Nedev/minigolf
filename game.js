@@ -5,46 +5,98 @@ const sbConfig = {
 
 let supabaseClient; let channel;
 try { 
-    supabaseClient = supabase.createClient(sbConfig.url, sbConfig.anonKey); 
+    if (sbConfig.url) supabaseClient = supabase.createClient(sbConfig.url, sbConfig.anonKey); 
 } catch(e) { 
-    console.warn("Supabase configuration missing or invalid. Check config.js or Vercel Environment Variables."); 
+    console.warn("Supabase configuration missing or invalid."); 
 }
+
+let particles = [];
 
 // --- DATA ---
 const LEVELS = [
-    { name: "Straight Shot", par: 2, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 50, y: 50, w: 20, h: 800 }, { x: 530, y: 50, w: 20, h: 800 }, { x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }], hazards: [] },
-    { name: "The Dogleg", par: 3, startInfo: { x: 150, y: 800 }, hole: { x: 450, y: 150 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 20, h: 800 }, { x: 530, y: 70, w: 20, h: 800 }, { x: 250, y: 300, w: 300, h: 20 }, { x: 50, y: 600, w: 300, h: 20 }], hazards: [] },
-    { name: "Sand Pit", par: 3, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 100, y: 50, w: 400, h: 20 }, { x: 100, y: 850, w: 400, h: 20 }, { x: 100, y: 70, w: 20, h: 780 }, { x: 480, y: 70, w: 20, h: 780 }], hazards: [{ type: 'sand', x: 200, y: 300, w: 200, h: 300 }] },
-    { name: "The Bridge", par: 4, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 }], hazards: [{ type: 'water', x: 70, y: 350, w: 460, h: 250 }, { type: 'bridge', x: 250, y: 350, w: 100, h: 250 }] },
-    { name: "Pillars", par: 4, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 150 }, walls: [{ x: 100, y: 50, w: 400, h: 20 }, { x: 100, y: 850, w: 400, h: 20 }, { x: 100, y: 70, w: 20, h: 780 }, { x: 480, y: 70, w: 20, h: 780 }, { x: 220, y: 400, w: 40, h: 40 }, { x: 340, y: 400, w: 40, h: 40 }, { x: 220, y: 250, w: 40, h: 40 }, { x: 340, y: 250, w: 40, h: 40 }], hazards: [] },
-    { name: "Zig-Zag Alley", par: 5, startInfo: { x: 100, y: 800 }, hole: { x: 500, y: 100 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 }, { x: 50, y: 600, w: 400, h: 20 }, { x: 150, y: 400, w: 400, h: 20 }, { x: 50, y: 200, w: 400, h: 20 }], hazards: [] },
-    { name: "Water Islands", par: 4, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 }], hazards: [{ type: 'water', x: 70, y: 300, w: 200, h: 200 }, { type: 'water', x: 330, y: 300, w: 200, h: 200 }, { type: 'sand', x: 250, y: 150, w: 100, h: 100 }] },
-    { name: "The Maze", par: 5, startInfo: { x: 100, y: 800 }, hole: { x: 500, y: 800 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 820 }, { x: 200, y: 200, w: 20, h: 650 }, { x: 350, y: 50, w: 20, h: 650 }], hazards: [] },
-    { name: "Bounce Pass", par: 3, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 100, y: 50, w: 400, h: 20 }, { x: 100, y: 850, w: 400, h: 20 }, { x: 100, y: 70, w: 20, h: 780 }, { x: 480, y: 70, w: 20, h: 780 }, { x: 200, y: 400, w: 200, h: 20 }], hazards: [{ type: 'sand', x: 120, y: 100, w: 360, h: 100 }] },
-    { name: "Grand Finale", par: 6, startInfo: { x: 100, y: 800 }, hole: { x: 500, y: 100 }, walls: [{ x: 30, y: 30, w: 540, h: 20 }, { x: 30, y: 870, w: 540, h: 20 }, { x: 30, y: 50, w: 20, h: 820 }, { x: 550, y: 50, w: 20, h: 820 }], hazards: [{ type: 'water', x: 50, y: 400, w: 180, h: 250 }, { type: 'water', x: 370, y: 400, w: 180, h: 250 }, { type: 'bridge', x: 230, y: 350, w: 140, h: 180 }, { type: 'bridge', x: 230, y: 550, w: 140, h: 180 }, { type: 'sand', x: 450, y: 50, w: 100, h: 100 }, { type: 'sand', x: 350, y: 150, w: 150, h: 50 }] }
+    { name: "First Steps", par: 2, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 150 }, walls: [{ x: 50, y: 50, w: 20, h: 800 }, { x: 530, y: 50, w: 20, h: 800 }, { x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }], hazards: [] },
+    { name: "Dogleg Left", par: 3, startInfo: { x: 150, y: 800 }, hole: { x: 450, y: 150 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 20, h: 800 }, { x: 530, y: 70, w: 20, h: 800 }, { x: 250, y: 300, w: 300, h: 20 }, { x: 50, y: 600, w: 300, h: 20 }], hazards: [] },
+    { name: "Sand Trap", par: 3, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 100, y: 50, w: 400, h: 20 }, { x: 100, y: 850, w: 400, h: 20 }, { x: 100, y: 70, w: 20, h: 780 }, { x: 480, y: 70, w: 20, h: 780 }], hazards: [{ type: 'sand', x: 200, y: 300, w: 200, h: 300 }] },
+    { name: "The Moat", par: 4, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 }], hazards: [{ type: 'water', x: 70, y: 350, w: 460, h: 250 }, { type: 'bridge', x: 250, y: 350, w: 100, h: 250 }] },
+    { name: "Moving Block", par: 3, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 }, { x: 200, y: 400, w: 200, h: 40, vx: 2, minX: 70, maxX: 330 }], hazards: [] },
+    { name: "Zig Zag", par: 5, startInfo: { x: 100, y: 800 }, hole: { x: 500, y: 100 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 }, { x: 50, y: 600, w: 400, h: 20 }, { x: 150, y: 400, w: 400, h: 20 }, { x: 50, y: 200, w: 400, h: 20 }], hazards: [] },
+    { name: "Double Trouble", par: 4, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 }, { x: 70, y: 300, w: 200, h: 40, vx: 2, minX: 70, maxX: 200 }, { x: 330, y: 500, w: 200, h: 40, vx: -2, minX: 200, maxX: 330 }], hazards: [] },
+    { name: "Island Hop", par: 4, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 }], hazards: [{ type: 'water', x: 70, y: 300, w: 460, h: 300 }, { type: 'bridge', x: 150, y: 400, w: 100, h: 110 }, { type: 'bridge', x: 350, y: 400, w: 100, h: 110 }] },
+    { name: "The Pinball", par: 4, startInfo: { x: 150, y: 800 }, hole: { x: 450, y: 100 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 }, { x: 220, y: 250, w: 50, h: 50 }, { x: 350, y: 350, w: 50, h: 50 }, { x: 220, y: 450, w: 50, h: 50 }, { x: 350, y: 550, w: 50, h: 50 }], hazards: [] },
+    { name: "Walled City", par: 5, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 450 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 }, { x: 200, y: 300, w: 20, h: 300 }, { x: 380, y: 300, w: 20, h: 300 }, { x: 200, y: 300, w: 200, h: 20 }], hazards: [] },
+    { name: "Quick Reflexes", par: 3, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 }, { x: 100, y: 450, w: 400, h: 20, vx: 5, minX: 50, maxX: 150 }], hazards: [] },
+    { name: "Sandy Dunes", par: 4, startInfo: { x: 100, y: 800 }, hole: { x: 500, y: 100 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 }], hazards: [{ type: 'sand', x: 200, y: 70, w: 50, h: 700 }, { type: 'sand', x: 350, y: 70, w: 50, h: 700 }] },
+    { name: "Bridge Over Troubled", par: 3, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 }], hazards: [{ type: 'water', x: 70, y: 400, w: 460, h: 100 }, { type: 'bridge', x: 250, y: 400, w: 100, h: 100 }] },
+    { name: "Piston Pump", par: 4, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 }, { x: 250, y: 400, w: 100, h: 100, vy: 3, minY: 200, maxY: 600 }], hazards: [] },
+    { name: "The Gauntlet", par: 5, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 }, { x: 70, y: 200, w: 250, h: 20 }, { x: 280, y: 400, w: 250, h: 20 }, { x: 70, y: 600, w: 250, h: 20 }], hazards: [{ type: 'sand', x: 350, y: 200, w: 100, h: 100 }] },
+    { name: "Narrow Path", par: 3, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 240, h: 780 }, { x: 310, y: 70, w: 240, h: 780 }], hazards: [] },
+    { name: "Water Hazard", par: 4, startInfo: { x: 100, y: 800 }, hole: { x: 500, y: 100 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 }], hazards: [{ type: 'water', x: 200, y: 70, w: 200, h: 780 }, { type: 'bridge', x: 200, y: 400, w: 200, h: 50 }] },
+    { name: "Crazy Blocks", par: 5, startInfo: { x: 150, y: 800 }, hole: { x: 450, y: 100 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 }, { x: 150, y: 600, w: 100, h: 20, vx: 2, minX: 100, maxX: 300 }, { x: 350, y: 400, w: 100, h: 20, vx: -3, minX: 200, maxX: 400 }, { x: 150, y: 200, w: 100, h: 20, vx: 4, minX: 100, maxX: 400 }], hazards: [] },
+    { name: "Twin Tunnels", par: 4, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 }, { x: 200, y: 300, w: 50, h: 300 }, { x: 350, y: 300, w: 50, h: 300 }, { x: 250, y: 300, w: 100, h: 20 }], hazards: [] },
+    { name: "The Ultimate Challenge", par: 6, startInfo: { x: 100, y: 800 }, hole: { x: 500, y: 100 }, walls: [{ x: 30, y: 30, w: 540, h: 20 }, { x: 30, y: 870, w: 540, h: 20 }, { x: 30, y: 50, w: 20, h: 820 }, { x: 550, y: 50, w: 20, h: 820 }, { x: 200, y: 600, w: 150, h: 20, vx: 3, minX: 50, maxX: 400 }, { x: 250, y: 300, w: 150, h: 20, vx: -4, minX: 50, maxX: 400 }], hazards: [{ type: 'water', x: 50, y: 400, w: 280, h: 150 }, { type: 'water', x: 270, y: 150, w: 280, h: 100 }, { type: 'bridge', x: 250, y: 400, w: 80, h: 150 }, { type: 'sand', x: 100, y: 100, w: 150, h: 150 }] },
+    // NEW LEVELS 21-40
+    { name: "Wall Warp", par: 3, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 }, { x: 100, y: 300, w: 400, h: 40 }, { x: 300, y: 500, w: 20, h: 300 }], hazards: [] },
+    { name: "Slalom Run", par: 4, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 50 }, walls: [{ x: 50, y: 0, w: 20, h: 900 }, { x: 530, y: 0, w: 20, h: 900 }], hazards: [{ type: 'sand', x: 70, y: 200, w: 200, h: 40 }, { type: 'sand', x: 330, y: 400, w: 200, h: 40 }, { type: 'sand', x: 70, y: 600, w: 200, h: 40 }] },
+    { name: "Cross Traffic", par: 4, startInfo: { x: 100, y: 800 }, hole: { x: 500, y: 100 }, walls: [{ x: 250, y: 100, w: 40, h: 700, vy: 5, minY: 100, maxY: 700 }], hazards: [] },
+    { name: "The Ring", par: 3, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 300 }, walls: [{ x: 200, y: 200, w: 200, h: 20 }, { x: 200, y: 400, w: 200, h: 20 }, { x: 200, y: 200, w: 20, h: 200 }, { x: 380, y: 200, w: 20, h: 200 }], hazards: [] },
+    { name: "Double Maze", par: 5, startInfo: { x: 100, y: 850 }, hole: { x: 500, y: 50 }, walls: [{ x: 50, y: 700, w: 400, h: 20 }, { x: 150, y: 500, w: 400, h: 20 }, { x: 50, y: 300, w: 400, h: 20 }], hazards: [] },
+    { name: "Water Tunnel", par: 3, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 200, y: 0, w: 20, h: 900 }, { x: 380, y: 0, w: 20, h: 900 }], hazards: [{ type: 'water', x: 220, y: 300, w: 160, h: 300 }, { type: 'bridge', x: 220, y: 400, w: 160, h: 100 }] },
+    { name: "Speed Trap", par: 2, startInfo: { x: 300, y: 850 }, hole: { x: 300, y: 50 }, walls: [{ x: 50, y: 400, w: 500, h: 20, vx: 8, minX: 50, maxX: 300 }], hazards: [] },
+    { name: "Spiral", par: 4, startInfo: { x: 100, y: 100 }, hole: { x: 300, y: 450 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 550, y: 50, w: 20, h: 800 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 250, w: 20, h: 600 }, { x: 50, y: 250, w: 350, h: 20 }], hazards: [] },
+    { name: "Bridge Hero", par: 4, startInfo: { x: 300, y: 850 }, hole: { x: 300, y: 50 }, hazards: [{ type: 'water', x: 0, y: 200, w: 600, h: 500 }, { type: 'bridge', x: 280, y: 200, w: 40, h: 500 }] },
+    { name: "Block Party", par: 5, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 100, y: 250, w: 60, h: 60 }, { x: 250, y: 350, w: 60, h: 60 }, { x: 400, y: 450, w: 60, h: 60 }, { x: 100, y: 550, w: 60, h: 60 }], hazards: [] },
+    { name: "Moving Sand", par: 3, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, hazards: [{ type: 'sand', x: 50, y: 300, w: 150, h: 150, vx: 2, minX: 50, maxX: 400 }] },
+    { name: "The Corridors", par: 4, startInfo: { x: 100, y: 800 }, hole: { x: 500, y: 100 }, walls: [{ x: 200, y: 0, w: 20, h: 700 }, { x: 400, y: 200, w: 20, h: 700 }], hazards: [] },
+    { name: "Island Queen", par: 4, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 150 }, hazards: [{ type: 'water', x: 50, y: 50, w: 500, h: 700 }, { type: 'bridge', x: 250, y: 300, w: 100, h: 100 }] },
+    { name: "Tight Squeeze", par: 3, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 50 }, walls: [{ x: 50, y: 200, w: 220, h: 20 }, { x: 330, y: 200, w: 220, h: 20 }], hazards: [] },
+    { name: "Bouncing Madness", par: 4, startInfo: { x: 100, y: 450 }, hole: { x: 500, y: 450 }, walls: [{ x: 250, y: 50, w: 50, h: 800 }], hazards: [] },
+    { name: "Long Shot", par: 2, startInfo: { x: 300, y: 850 }, hole: { x: 300, y: 50 }, hazards: [{ type: 'sand', x: 100, y: 200, w: 400, h: 400 }] },
+    { name: "Checkers", par: 5, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 100, y: 200, w: 40, h: 40 }, { x: 200, y: 300, w: 40, h: 40 }, { x: 300, y: 200, w: 40, h: 40 }, { x: 400, y: 300, w: 40, h: 40 }], hazards: [] },
+    { name: "Gravity Pit", par: 4, startInfo: { x: 100, y: 100 }, hole: { x: 500, y: 800 }, hazards: [{ type: 'water', x: 200, y: 200, w: 200, h: 400 }] },
+    { name: "Final Lap", par: 5, startInfo: { x: 300, y: 850 }, hole: { x: 300, y: 50 }, walls: [{ x: 100, y: 100, w: 400, h: 20 }, { x: 100, y: 700, w: 400, h: 20 }], hazards: [{ type: 'sand', x: 50, y: 300, w: 500, h: 200 }] },
+    { name: "The Grand Finale", par: 6, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 50, y: 450, w: 500, h: 20 }], hazards: [{ type: 'water', x: 50, y: 150, w: 500, h: 250 }, { type: 'bridge', x: 250, y: 150, w: 100, h: 250 }, { type: 'sand', x: 200, y: 500, w: 200, h: 200 }] }
 ];
 
 const BALL_TYPES = [
-    { id: 'standard', name: "Standard", color: '#ffffff', friction: 0.985, bounce: 0.7, mass: 1 },
-    { id: 'pro', name: "Pro Tour", color: '#ffea00', friction: 0.980, bounce: 0.5, mass: 1 },
-    { id: 'bouncy', name: "Bouncy Blue", color: '#00ccff', friction: 0.990, bounce: 0.9, mass: 0.8 },
-    { id: 'heavy', name: "The Rock", color: '#ff3333', friction: 0.970, bounce: 0.4, mass: 1.5 },
-    { id: 'neon', name: "Neon Violet", color: '#cf00ff', friction: 0.985, bounce: 0.8, mass: 0.9 }
+    { id: 'standard', name: "Standard", friction: 0.985, bounce: 0.7, mass: 1 },
+    { id: 'pro', name: "Pro Tour", friction: 0.980, bounce: 0.5, mass: 1 },
+    { id: 'bouncy', name: "Bouncy", friction: 0.990, bounce: 0.9, mass: 0.8 },
+    { id: 'heavy', name: "The Rock", friction: 0.970, bounce: 0.4, mass: 1.5 },
+    { id: 'neon', name: "Neon", friction: 0.985, bounce: 0.8, mass: 0.9 }
+];
+
+const COLOR_CATALOG = [
+    { name: 'Pure White', hex: '#ffffff' }, { name: 'Sunshine', hex: '#ffea00' }, { name: 'Sky Blue', hex: '#00ccff' },
+    { name: 'Candy Red', hex: '#ff3333' }, { name: 'Neon Purple', hex: '#cf00ff' }, { name: 'Forest', hex: '#2f855a' },
+    { name: 'Midnight', hex: '#1a202c' }, { name: 'Gold', hex: '#d69e2e' }, { name: 'Silver', hex: '#a0aec0' },
+    { name: 'Pinky', hex: '#ed64a6' }, { name: 'Orange Juice', hex: '#ed8936' }, { name: 'Turquoise', hex: '#38b2ac' },
+    { name: 'Lavender', hex: '#b794f4' }, { name: 'Lime', hex: '#9ae6b4' }, { name: 'Maroon', hex: '#822727' },
+    { name: 'Navy', hex: '#2a4365' }, { name: 'Grape', hex: '#553c9a' }, { name: 'Teal', hex: '#2c7a7b' },
+    { name: 'Rose', hex: '#f687b3' }, { name: 'Brownie', hex: '#744210' }, { name: 'Mint', hex: '#c6f6d5' },
+    { name: 'Cyan', hex: '#0bc5ea' }, { name: 'Peach', hex: '#fbd38d' }, { name: 'Olive', hex: '#707020' },
+    { name: 'Indigo', hex: '#434190' }, { name: 'Crimson', hex: '#9b2c2c' }, { name: 'Sand', hex: '#f6e05e' },
+    { name: 'Slate', hex: '#4a5568' }, { name: 'Emerald', hex: '#059669' }, { name: 'Salmon', hex: '#fa8072' },
+    { name: 'Tan', hex: '#d2b48c' }, { name: 'Plum', hex: '#dda0dd' }, { name: 'Sienna', hex: '#a0522d' },
+    { name: 'Khaki', hex: '#f0e68c' }, { name: 'Coral', hex: '#ff7f50' }
 ];
 
 const CONFIG = { ballRadius: 10, holeRadius: 15, maxPower: 25, powerMultiplier: 0.12, stopVelocity: 0.2, subSteps: 10, courseBaseWidth: 600, courseBaseHeight: 900 };
 
-// --- GLOBAL STATE ---
 let state = {
     screen: 'screen-splash',
-    mode: 'menu', // menu, solo, multi
+    mode: 'menu', 
     volume: 80,
     username: 'Guest',
-    unlockedBalls: ['standard'], // Only first ball unlocked by default
-    missionStats: { holesInOne: 0, sandHits: 0, levelsFinished: 0, totalShots: 0 },
-    myRole: 'p1', // p1, p2, p3, p4
+    unlockedBalls: ['standard', 'pro', 'bouncy', 'heavy', 'neon'],
+    unlockedColors: ['#ffffff'],
+    points: 0,
+    levelStars: [], // [0]=3 stars, [1]=2 stars etc.
+    missionStats: { holesPlayed: 0, sandHits: 0, levelsFinished: 0, totalStrokes: 0, starsEarned: 0 },
+    myRole: 'p1', 
     playersReady: {},
     roomId: null,
+    selectedColor: '#ffffff',
+    selectedBallIdx: 0,
 
     game: {
         levelIdx: 0,
@@ -68,14 +120,117 @@ let canvas, ctx;
 
 const P_COLORS = { p1: '#ffffff', p2: '#ffea00', p3: '#00ccff', p4: '#ff3333' };
 
+// --- LOCAL STORAGE ---
+function loadLocalData() {
+    try {
+        const d = localStorage.getItem('minigolf_data');
+        if (d) {
+            const data = JSON.parse(d);
+            if (data.username) {
+                state.username = data.username;
+                const mi = document.getElementById('username-input');
+                if (mi) mi.value = state.username;
+                const mn = document.getElementById('main-mini-name');
+                if (mn) mn.innerText = state.username;
+                const ma = document.getElementById('main-mini-avatar');
+                if (ma) ma.innerText = (state.username[0] || 'G').toUpperCase();
+            }
+            state.unlockedBalls = ['standard', 'pro', 'bouncy', 'heavy', 'neon']; // Always unlocked now
+            state.unlockedColors = data.unlockedColors || ['#ffffff'];
+            state.points = data.points || 0;
+            state.levelStars = data.levelStars || [];
+            state.missionStats = data.missionStats || { holesPlayed: 0, sandHits: 0, levelsFinished: 0, totalStrokes: 0, starsEarned: 0 };
+            state.selectedColor = data.selectedColor || '#ffffff';
+            state.selectedBallIdx = data.selectedBallIdx || 0;
+            if (state.game.players.p1) {
+                state.game.players.p1.ballIdx = state.selectedBallIdx;
+                state.game.players.p1.color = state.selectedColor;
+            }
+            refreshPointsDisplay();
+        }
+    } catch(e){}
+}
+
+function saveLocalData() {
+    try {
+        localStorage.setItem('minigolf_data', JSON.stringify({
+            username: state.username,
+            unlockedColors: state.unlockedColors,
+            points: state.points,
+            levelStars: state.levelStars,
+            missionStats: state.missionStats,
+            selectedColor: state.selectedColor,
+            selectedBallIdx: state.selectedBallIdx
+        }));
+    } catch(e){}
+}
+
+function refreshPointsDisplay() {
+    const el = document.getElementById('player-points');
+    if (el) el.innerText = state.points;
+    const btn = document.getElementById('btn-spin');
+    if (btn) btn.disabled = (state.points < 100);
+}
+
+function refreshLevelGrid() {
+    const lg = document.getElementById('level-grid');
+    lg.innerHTML = '';
+    LEVELS.forEach((lvl, i) => {
+        const d = document.createElement('div');
+        d.className = 'level-box';
+        const stars = state.levelStars[i] || 0;
+        let sHtml = '';
+        for(let j=0; j<3; j++) sHtml += `<span class="${j < stars ? 'earned' : ''}">★</span>`;
+        d.innerHTML = `<div>${i + 1}</div><div class="level-stars">${sHtml}</div>`;
+        d.onclick = () => { startSoloGame(i); };
+        lg.appendChild(d);
+    });
+}
+
+function refreshProfileStats() {
+    const holes = state.missionStats.holesPlayed || 0;
+    const strokes = state.missionStats.totalStrokes || 0;
+    const stars = state.missionStats.starsEarned || 0;
+    
+    document.getElementById('p-holes').innerText = holes;
+    document.getElementById('p-strokes').innerText = strokes;
+    document.getElementById('p-stars').innerText = stars;
+
+    // Name and Avatar
+    const pInput = document.getElementById('p-username-input');
+    if (pInput) {
+        pInput.value = state.username;
+        document.getElementById('p-avatar-circle').innerText = (state.username[0] || 'P').toUpperCase();
+    }
+
+    // Progress Bar
+    const levelsCleared = state.levelStars.filter(s => s > 0).length;
+    const progressPercent = (levelsCleared / LEVELS.length) * 100;
+    const fill = document.getElementById('p-progress-fill');
+    if (fill) fill.style.width = progressPercent + '%';
+    const pText = document.getElementById('p-progress-text');
+    if (pText) pText.innerText = `${levelsCleared} / ${LEVELS.length} Levels Cleared`;
+}
+
 // --- UI MANAGEMENT ---
 function showScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     state.screen = id;
+    if (id === 'screen-profile') refreshProfileStats();
+    if (id === 'screen-levels') refreshLevelGrid();
+    if (id === 'screen-rewards' || id === 'screen-main-menu') refreshPointsDisplay();
+    if (id === 'screen-balls') refreshBallsUI();
+    if (id === 'screen-leaderboard') {
+        const firstGridItem = document.querySelector('.lb-grid-item');
+        if (firstGridItem) firstGridItem.click();
+    }
 }
 
 function initUI() {
+    loadLocalData();
+    refreshLevelGrid();
+
     // Nav Buttons
     document.querySelectorAll('.btn-nav').forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -89,59 +244,179 @@ function initUI() {
     // Splash Play
     document.getElementById('btn-splash-play').addEventListener('click', () => showScreen('screen-main-menu'));
 
+    // Sync Usernames
+    const mainNameInput = document.getElementById('username-input');
+    const profileNameInput = document.getElementById('p-username-input');
+    
+    const updateName = (val) => {
+        state.username = val.trim() || 'Guest';
+        if (mainNameInput) mainNameInput.value = state.username;
+        if (profileNameInput) profileNameInput.value = state.username;
+        
+        const av = document.getElementById('p-avatar-circle');
+        if (av) av.innerText = (state.username[0] || 'P').toUpperCase();
+        
+        const mn = document.getElementById('main-mini-name');
+        if (mn) mn.innerText = state.username;
+        const ma = document.getElementById('main-mini-avatar');
+        if (ma) ma.innerText = (state.username[0] || 'G').toUpperCase();
+
+        saveLocalData();
+    };
+
+    if (mainNameInput) mainNameInput.addEventListener('input', (e) => updateName(e.target.value));
+    if (profileNameInput) profileNameInput.addEventListener('input', (e) => updateName(e.target.value));
+
     // Nav Bindings
     document.querySelectorAll('.btn-nav').forEach(btn => {
         btn.addEventListener('click', () => {
              const target = btn.getAttribute('data-target');
-             if (target === 'screen-leaderboard') refreshLeaderboard();
+             if (target === 'screen-leaderboard') {
+                 // Already handled in showScreen but good to have
+             }
         });
     });
 
-    // Levels Generation
-    const lg = document.getElementById('level-grid');
-    LEVELS.forEach((lvl, i) => {
-        const d = document.createElement('div');
-        d.className = 'level-box';
-        d.innerHTML = i + 1;
-        d.onclick = () => { startSoloGame(i); };
-        lg.appendChild(d);
-    });
+    // Leaderboard Grid Selector Logic
+    const lbBtn = document.getElementById('btn-lb-level-select');
+    const lbOverlay = document.getElementById('lb-grid-overlay');
+    const lbGrid = document.getElementById('lb-level-grid');
+    const lbLabel = document.getElementById('lb-current-lvl-label');
 
-    // Balls Generation
-    const bDiv = document.getElementById('ball-inventory');
-    const updateBallVisuals = (idx) => {
-        const b = BALL_TYPES[idx];
-        const isLocked = !state.unlockedBalls.includes(b.id);
+    if (lbBtn && lbOverlay) {
+        lbBtn.onclick = (e) => {
+            e.stopPropagation();
+            lbOverlay.classList.toggle('hidden');
+        };
+        // Close if click outside
+        window.addEventListener('click', () => lbOverlay.classList.add('hidden'));
+        lbOverlay.onclick = (e) => e.stopPropagation();
+    }
 
-        document.getElementById('ball-name-display').innerText = b.name + (isLocked ? " (LOCKED)" : "");
-        document.getElementById('ball-display-large').style.backgroundColor = isLocked ? "#333" : b.color;
-        document.getElementById('ball-display-large').style.opacity = isLocked ? "0.5" : "1";
+    if (lbGrid) {
+        lbGrid.innerHTML = '';
+        LEVELS.forEach((_, i) => {
+            const item = document.createElement('div');
+            item.className = 'lb-grid-item';
+            item.innerText = i + 1;
+            item.onclick = () => {
+                document.querySelectorAll('.lb-grid-item').forEach(el => el.classList.remove('active'));
+                item.classList.add('active');
+                lbLabel.innerText = `LEVEL ${i + 1}`;
+                lbOverlay.classList.add('hidden');
+                refreshLeaderboard(i);
+            };
+            lbGrid.appendChild(item);
+        });
+    }
 
-        document.getElementById('bar-bounce').style.width = (b.bounce * 100) + '%';
-        document.getElementById('bar-friction').style.width = (b.friction * 100) + '%';
-        document.getElementById('bar-weight').style.width = (b.mass * 60) + '%';
-
-        if (!isLocked) {
-            state.game.players['p1'].ballIdx = idx;
-            state.game.players['p1'].color = b.color;
+    // --- GEAR WORKSHOP POPULATION ---
+    window.refreshBallsUI = () => {
+        const bDiv = document.getElementById('ball-inventory');
+        if (bDiv) {
+            bDiv.innerHTML = '';
+            BALL_TYPES.forEach((b, i) => {
+                const el = document.createElement('div');
+                const isLocked = !state.unlockedBalls.includes(b.id);
+                el.className = `ball-icon-modern ${i === state.selectedBallIdx ? 'selected' : ''} ${isLocked ? 'locked' : ''}`;
+                el.innerHTML = isLocked ? "🔒" : (b.name[0] || 'G');
+                el.onclick = () => {
+                    if (isLocked) return;
+                    state.selectedBallIdx = i;
+                    document.querySelectorAll('.ball-icon-modern').forEach(e => e.classList.remove('selected'));
+                    el.classList.add('selected');
+                    updateGearVisuals();
+                };
+                bDiv.appendChild(el);
+            });
         }
+        refreshColorCatalog();
+        updateGearVisuals();
     };
 
-    BALL_TYPES.forEach((b, i) => {
-        const el = document.createElement('div');
+    const refreshColorCatalog = () => {
+        const cGrid = document.getElementById('color-catalog-grid');
+        if (!cGrid) return;
+        cGrid.innerHTML = '';
+        COLOR_CATALOG.forEach(c => {
+            const el = document.createElement('div');
+            const isLocked = !state.unlockedColors.includes(c.hex);
+            el.className = `color-chip ${state.selectedColor === c.hex ? 'selected' : ''} ${isLocked ? 'locked' : ''}`;
+            el.style.backgroundColor = c.hex;
+            el.onclick = () => {
+                if (isLocked) return;
+                state.selectedColor = c.hex;
+                document.querySelectorAll('.color-chip').forEach(e => e.classList.remove('selected'));
+                el.classList.add('selected');
+                updateGearVisuals();
+            };
+            cGrid.appendChild(el);
+        });
+    };
+
+    const updateGearVisuals = () => {
+        const b = BALL_TYPES[state.selectedBallIdx];
         const isLocked = !state.unlockedBalls.includes(b.id);
-        el.className = `ball-icon ${i === 0 ? 'selected' : ''} ${isLocked ? 'locked-ball' : ''}`;
-        el.style.backgroundColor = isLocked ? "#555" : b.color;
-        el.innerHTML = isLocked ? "🔒" : "";
-        el.onclick = () => {
-            if (!state.unlockedBalls.includes(b.id)) return; // Can't select locked
-            document.querySelectorAll('.ball-icon').forEach(e => e.classList.remove('selected'));
-            el.classList.add('selected');
-            updateBallVisuals(i);
-        };
-        bDiv.appendChild(el);
-    });
-    updateBallVisuals(0);
+        const col = state.selectedColor;
+
+        document.getElementById('ball-name-display').innerText = b.name.toUpperCase();
+        const display = document.getElementById('ball-display-large');
+        if (display) {
+            display.style.backgroundColor = col;
+            display.style.opacity = isLocked ? "0.5" : "1";
+        }
+
+        const bounceBar = document.getElementById('bar-bounce');
+        if (bounceBar) bounceBar.style.width = (b.bounce * 100) + '%';
+        const frictionBar = document.getElementById('bar-friction');
+        if (frictionBar) frictionBar.style.width = (b.friction * 100) + '%';
+        const weightBar = document.getElementById('bar-weight');
+        if (weightBar) weightBar.style.width = (b.mass * 60) + '%';
+
+        state.game.players['p1'].ballIdx = state.selectedBallIdx;
+        state.game.players['p1'].color = col;
+        saveLocalData();
+    };
+
+    // --- REWARDS & SPIN LOGIC ---
+    let isSpinning = false;
+    const spinRoulette = () => {
+        if (isSpinning || state.points < 100) return;
+        
+        const lockedColors = COLOR_CATALOG.filter(c => !state.unlockedColors.includes(c.hex));
+        if (lockedColors.length === 0) {
+            alert("Wow! You unlocked ALL colors!");
+            return;
+        }
+
+        isSpinning = true;
+        state.points -= 100;
+        refreshPointsDisplay();
+        saveLocalData();
+
+        const wheel = document.getElementById('roulette-inner');
+        const resultBox = document.getElementById('roulette-result');
+        const winColor = lockedColors[Math.floor(Math.random() * lockedColors.length)];
+
+        // Visual "Spin" animation via rotation
+        const extraRot = 360 * 5; // 5 full spins
+        const finalRot = extraRot + (Math.random() * 360);
+        wheel.style.transform = `rotate(${finalRot}deg)`;
+
+        // After 4s (matching CSS transition)
+        setTimeout(() => {
+            state.unlockedColors.push(winColor.hex);
+            saveLocalData();
+            resultBox.style.backgroundColor = winColor.hex;
+            resultBox.innerText = '✓';
+            isSpinning = false;
+            alert(`UNLOCKED: ${winColor.name.toUpperCase()}!`);
+        }, 4000);
+    };
+
+    document.getElementById('btn-spin').addEventListener('click', spinRoulette);
+
+    refreshBallsUI();
 
     // Multiplayer bindings
     document.getElementById('btn-join-room').addEventListener('click', joinLobby);
@@ -464,6 +739,11 @@ function checkLevelEnd() {
     state.game.activePlayers.forEach(r => { if (state.game.players[r].state !== 'holed') allHoled = false; });
 
     if (allHoled) {
+        // Reward 25 Points for finishing
+        state.points += 25;
+        refreshPointsDisplay();
+        saveLocalData();
+
         setTimeout(() => { 
             showLevelComplete(); 
             saveScoreToSupabase(); // Save local player score
@@ -485,28 +765,34 @@ async function saveScoreToSupabase() {
     if (error) console.error("Score save error:", error);
 }
 
-async function refreshLeaderboard() {
+async function refreshLeaderboard(lvlIdx) {
     if (!supabaseClient) return;
     const list = document.getElementById('lb-list');
-    list.innerHTML = "<p>Loading top scores...</p>";
+    list.innerHTML = `<div class="lb-loading">Searching for champions of Level ${lvlIdx + 1}...</div>`;
     
     const { data, error } = await supabaseClient
         .from('scores')
         .select('*')
+        .eq('level_idx', lvlIdx + 1)
         .order('strokes', { ascending: true })
-        .limit(10);
+        .limit(20);
     
     if (error) { list.innerHTML = "Error loading leaderboard."; return; }
     
+    if (data.length === 0) {
+        list.innerHTML = `<div class="lb-loading" style="color: #a0aec0">No one has finished this level yet. Be the first!</div>`;
+        return;
+    }
+
     list.innerHTML = '';
     data.forEach((row, i) => {
         const d = document.createElement('div');
-        d.className = 'lb-row';
+        d.className = 'lb-entry';
+        const rankClass = (i < 3) ? `entry-rank-${i + 1}` : '';
         d.innerHTML = `
-            <span class="lb-rank">#${i + 1}</span>
-            <span class="lb-name">${row.username}</span>
-            <span class="lb-level">Lvl ${row.level_idx}</span>
-            <span class="lb-strokes">${row.strokes} shots</span>
+            <div class="entry-rank ${rankClass}">${i + 1}</div>
+            <div class="entry-name">${row.username}</div>
+            <div class="entry-score">${row.strokes} SHOTS</div>
         `;
         list.appendChild(d);
     });
@@ -514,24 +800,70 @@ async function refreshLeaderboard() {
 
 function showLevelComplete() {
     const sb = document.getElementById('lc-scoreboard');
-    sb.innerHTML = '';
+    if (sb) sb.innerHTML = '';
 
-    const par = document.getElementById('lc-par');
-    par.innerText = LEVELS[state.game.levelIdx].par;
+    const parEl = document.getElementById('lc-par');
+    const currentPar = LEVELS[state.game.levelIdx].par;
+    if (parEl) parEl.innerText = currentPar;
 
     state.game.activePlayers.forEach(r => {
         const p = state.game.players[r];
         const row = document.createElement('div');
         row.className = 'sb-row';
         row.innerHTML = `<span style="color:${P_COLORS[r]}">${r.toUpperCase()}</span><span>${p.strokes}</span>`;
-        sb.appendChild(row);
+        if (sb) sb.appendChild(row);
     });
 
-    if (state.mode === 'solo') document.getElementById('btn-next-level').style.display = 'inline-block';
-    else document.getElementById('btn-next-level').style.display = state.myRole === 'p1' ? 'inline-block' : 'none';
+    if (state.mode === 'solo') {
+        const strokes = state.game.players['p1'].strokes;
+        let earned = 1;
+        if (strokes <= currentPar) earned = 3;
+        else if (strokes <= currentPar + 1) earned = 2;
+        
+        let prevStars = state.levelStars[state.game.levelIdx] || 0;
+        if (earned > prevStars) {
+            state.missionStats.starsEarned += (earned - prevStars);
+            state.levelStars[state.game.levelIdx] = earned;
+        }
+        state.missionStats.holesPlayed++;
+        state.missionStats.totalStrokes += strokes;
+        saveLocalData();
+        
+        // UI Stars
+        for(let i=1; i<=3; i++) {
+            const el = document.getElementById(`lc-s${i}`);
+            if (el) {
+                if (i <= earned) { el.classList.add('earned'); el.innerText = '★'; }
+                else { el.classList.remove('earned'); el.innerText = '☆'; }
+            }
+        }
+        const starsContainer = document.getElementById('lc-stars-container');
+        if (starsContainer) starsContainer.classList.remove('hidden');
+        
+        const nextBtn = document.getElementById('btn-next-level');
+        if (nextBtn) nextBtn.style.display = 'inline-block';
+    } else {
+        const starsContainer = document.getElementById('lc-stars-container');
+        if (starsContainer) starsContainer.classList.add('hidden');
+        
+        const nextBtn = document.getElementById('btn-next-level');
+        if (nextBtn) nextBtn.style.display = state.myRole === 'p1' ? 'inline-block' : 'none';
+    }
 
-    document.getElementById('lc-title').innerText = "HOLE COMPLETE";
+    const title = document.getElementById('lc-title');
+    if (title) title.innerText = "HOLE COMPLETE";
     showScreen('level-complete');
+}
+
+function spawnHoleParticles(x, y, color) {
+    for(let i = 0; i < 25; i++) {
+        particles.push({
+            x: x, y: y,
+            vx: (Math.random() - 0.5) * 12, 
+            vy: (Math.random() - 0.5) * 12 - 3,
+            life: 1.0, color: color
+        });
+    }
 }
 
 // --- INPUT & PHYSICS ---
@@ -607,6 +939,18 @@ function updatePhysics() {
     let inWater = false; let inSand = false; let onBridge = false;
     const lvl = LEVELS[state.game.levelIdx];
 
+    // Handle moving walls
+    lvl.walls.forEach(w => {
+        if (w.vx) {
+            w.x += w.vx;
+            if (w.x > w.maxX || w.x < w.minX) w.vx *= -1;
+        }
+        if (w.vy) {
+            w.y += w.vy;
+            if (w.y > w.maxY || w.y < w.minY) w.vy *= -1;
+        }
+    });
+
     lvl.hazards.forEach(h => {
         if (p.x > h.x && p.x < h.x + h.w && p.y > h.y && p.y < h.y + h.h) {
             if (h.type === 'bridge') onBridge = true;
@@ -653,6 +997,7 @@ function updatePhysics() {
     const dx = p.x - lvl.hole.x; const dy = p.y - lvl.hole.y;
     if (dx * dx + dy * dy < CONFIG.holeRadius ** 2 && (p.vx ** 2 + p.vy ** 2) < 40) {
         p.state = 'holed'; p.vx = 0; p.vy = 0;
+        spawnHoleParticles(lvl.hole.x, lvl.hole.y, p.color);
         advanceTurn(); refreshHUD(); checkLevelEnd();
         if (state.mode === 'multi' && channel) {
             channel.send({ type: 'broadcast', event: 'game', payload: { action: 'pos', role: pk, x: p.x, y: p.y, state: p.state, turnIdx: state.game.turnIdx } });
@@ -723,13 +1068,19 @@ function render() {
         const dy = state.dragStart.y - state.dragCurrent.y;
         const power = Math.min(Math.sqrt(dx * dx + dy * dy) * CONFIG.powerMultiplier, CONFIG.maxPower);
 
-        // Gradient color for power
         ctx.strokeStyle = `rgb(${power * 10}, ${255 - power * 10}, 0)`;
         ctx.lineWidth = 4;
         ctx.lineCap = 'round';
         ctx.beginPath();
         ctx.moveTo(p.x, p.y);
         ctx.lineTo(p.x + dx, p.y + dy);
+        
+        // Sleek Arrow Head
+        const arrowHeadLength = 12 + (power * 0.3);
+        const angle = Math.atan2(dy, dx);
+        ctx.lineTo(p.x + dx - arrowHeadLength * Math.cos(angle - Math.PI / 6), p.y + dy - arrowHeadLength * Math.sin(angle - Math.PI / 6));
+        ctx.moveTo(p.x + dx, p.y + dy);
+        ctx.lineTo(p.x + dx - arrowHeadLength * Math.cos(angle + Math.PI / 6), p.y + dy - arrowHeadLength * Math.sin(angle + Math.PI / 6));
         ctx.stroke();
     }
 
@@ -755,12 +1106,29 @@ function render() {
         ctx.fillStyle = 'rgba(255,255,255,0.4)';
         ctx.fill();
 
-        ctx.fillStyle = 'white';
-        ctx.font = 'bold 12px Nunito';
-        ctx.textAlign = 'center';
-        const displayName = (p.name || r).toUpperCase();
-        ctx.fillText(displayName, p.x, p.y - 15);
+        // Only draw player name if it's multiplayer
+        if (state.mode === 'multi') {
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 12px Nunito';
+            ctx.textAlign = 'center';
+            const displayName = (p.name || r).toUpperCase();
+            ctx.fillText(displayName, p.x, p.y - 15);
+        }
     });
+
+    // Draw Particles
+    if (particles.length > 0) {
+        particles.forEach((pt, i) => {
+            ctx.globalAlpha = Math.max(0, pt.life);
+            ctx.fillStyle = pt.color;
+            ctx.beginPath(); ctx.arc(pt.x, pt.y, 4, 0, Math.PI * 2); ctx.fill();
+            pt.x += pt.vx; pt.y += pt.vy;
+            pt.vy += 0.3; // gravity
+            pt.life -= 0.03;
+            if (pt.life <= 0) particles.splice(i, 1);
+        });
+        ctx.globalAlpha = 1.0;
+    }
 
     ctx.restore();
 }

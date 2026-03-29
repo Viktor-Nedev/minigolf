@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crazy Mini Golf!</title>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
-    
+
     <!-- Supabase SDK (Realtime focus) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
+
 <body>
     <div id="game-container">
         <!-- Background Canvas -->
@@ -20,7 +23,7 @@
 
         <!-- UI Layer -->
         <div id="ui-layer">
-            
+
             <!-- 1. SPLASH SCREEN -->
             <div id="screen-splash" class="screen active">
                 <div class="logo-container bounce-anim">
@@ -33,26 +36,54 @@
             <div id="screen-main-menu" class="screen">
                 <div class="top-bar">
                     <div class="player-mini-profile btn-nav" data-target="screen-profile">
-                        <div class="avatar-circle"></div>
-                        <span>Guest</span>
+                        <div class="avatar-circle" id="main-mini-avatar"></div>
+                        <span id="main-mini-name">Guest</span>
                     </div>
-                    <button class="icon-btn btn-nav" data-target="screen-settings">⚙️</button>
+                    <button class="icon-btn btn-nav" data-target="screen-settings">
+                        <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
+                            <path
+                                d="M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7-4c0-.3 0-.6-.1-.9l2.1-1.6c.2-.2.2-.4.1-.6l-2-3.5c-.1-.2-.3-.3-.5-.2l-2.5 1c-.5-.4-1.1-.7-1.7-.9l-.4-2.6c0-.2-.2-.4-.5-.4h-4c-.3 0-.5.2-.5.4l-.4 2.6c-.6.2-1.2.5-1.7.9l-2.5-1c-.2-.1-.4 0-.5.2l-2 3.5c-.1.2-.1.4.1.6l2.1 1.6c0 .3-.1.6-.1.9s0 .6.1.9l-2.1 1.6c-.2.2-.2.4-.1.6l2 3.5c.1.2.3.3.5.2l2.5-1c.5.4 1.1.7 1.7.9l.4 2.6c0 .2.2.4.5.4h4c.3 0 .5-.2.5-.4l.4-2.6c.6-.2 1.2-.5 1.7-.9l2.5 1c.2.1.4 0 .5-.2l2-3.5c.1-.2.1-.4-.1-.6l-2.1-1.6c0-.3.1-.6.1-.9z" />
+                        </svg>
+                    </button>
                 </div>
-                
+
                 <div class="main-menu-grid">
-                    <button class="menu-card btn-nav delay-1" data-target="screen-levels" style="--card-color: #4CAF50;">
+                    <button class="menu-card btn-nav delay-1" data-target="screen-levels"
+                        style="--card-color: #4CAF50;">
                         <span class="card-icon">⛳</span>
                         <span class="card-title">SINGLE PLAYER</span>
                     </button>
-                    <button class="menu-card btn-nav delay-2" data-target="screen-multiplayer" style="--card-color: #2196F3;">
+                    <button class="menu-card btn-nav delay-2" data-target="screen-multiplayer"
+                        style="--card-color: #2196F3;">
                         <span class="card-icon">🌍</span>
                         <span class="card-title">MULTIPLAYER</span>
                     </button>
                     <button class="menu-card btn-nav delay-3" data-target="screen-balls" style="--card-color: #FFC107;">
-                        <span class="card-icon">⚽</span>
-                        <span class="card-title">BALLS</span>
+                        <span class="card-icon">
+                            <svg viewBox="0 0 24 24" width="64" height="64" fill="white">
+                                <circle cx="12" cy="12" r="10" fill="white" />
+                                <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"
+                                    opacity=".2" />
+                                <circle cx="8" cy="8" r="1" fill="#ddd" />
+                                <circle cx="12" cy="7" r="1" fill="#ddd" />
+                                <circle cx="16" cy="8" r="1" fill="#ddd" />
+                                <circle cx="7" cy="12" r="1" fill="#ddd" />
+                                <circle cx="12" cy="12" r="1" fill="#ddd" />
+                                <circle cx="17" cy="12" r="1" fill="#ddd" />
+                                <circle cx="8" cy="16" r="1" fill="#ddd" />
+                                <circle cx="12" cy="17" r="1" fill="#ddd" />
+                                <circle cx="16" cy="16" r="1" fill="#ddd" />
+                            </svg>
+                        </span>
+                        <span class="card-title">GEAR</span>
                     </button>
-                    <button class="menu-card btn-nav delay-4" data-target="screen-leaderboard" style="--card-color: #FF5722;">
+                    <button class="menu-card btn-nav delay-4" data-target="screen-rewards"
+                        style="--card-color: #9f7aea;">
+                        <span class="card-icon">🎁</span>
+                        <span class="card-title">REWARDS</span>
+                    </button>
+                    <button class="menu-card btn-nav delay-5" data-target="screen-leaderboard"
+                        style="--card-color: #FF5722;">
                         <span class="card-icon">🏆</span>
                         <span class="card-title">LEADERBOARD</span>
                     </button>
@@ -79,7 +110,9 @@
                             <div class="mission-info">
                                 <h3>First Flight</h3>
                                 <p>Shoot your first ball</p>
-                                <div class="progress-bar"><div class="fill" style="width: 100%;"></div></div>
+                                <div class="progress-bar">
+                                    <div class="fill" style="width: 100%;"></div>
+                                </div>
                             </div>
                             <div class="mission-reward">🎁 50 Coins</div>
                         </div>
@@ -87,7 +120,9 @@
                             <div class="mission-info">
                                 <h3>Hole in One</h3>
                                 <p>Get a hole-in-one</p>
-                                <div class="progress-bar"><div class="fill" style="width: 0%;"></div></div>
+                                <div class="progress-bar">
+                                    <div class="fill" style="width: 0%;"></div>
+                                </div>
                             </div>
                             <div class="mission-reward">⚽ Bouncy Ball</div>
                         </div>
@@ -98,7 +133,9 @@
                             <div class="mission-info">
                                 <h3>King of Sand</h3>
                                 <p>Hit 5 sand traps</p>
-                                <div class="progress-bar"><div class="fill" style="width: 20%;"></div></div>
+                                <div class="progress-bar">
+                                    <div class="fill" style="width: 20%;"></div>
+                                </div>
                             </div>
                             <div class="mission-reward">⚽ Heavy Rock</div>
                         </div>
@@ -106,7 +143,9 @@
                             <div class="mission-info">
                                 <h3>Win it All</h3>
                                 <p>Finish 10 levels</p>
-                                <div class="progress-bar"><div class="fill" style="width: 10%;"></div></div>
+                                <div class="progress-bar">
+                                    <div class="fill" style="width: 10%;"></div>
+                                </div>
                             </div>
                             <div class="mission-reward">⚽ Neon Ball</div>
                         </div>
@@ -114,21 +153,56 @@
                 </div>
             </div>
 
-            <!-- 5. SELECT BALL -->
+            <!-- 5. GEAR WORKSHOP -->
             <div id="screen-balls" class="screen">
                 <button class="back-btn btn-nav" data-target="screen-main-menu">↩ BACK</button>
-                <h2 class="page-title">YOUR GEAR</h2>
-                <div class="ball-showcase">
-                    <div id="ball-display-large" class="ball-large pulse-anim"></div>
-                    <h3 id="ball-name-display">Standard Golf</h3>
-                    <div class="stats-bars">
-                        <div class="stat-row"><span>Bounce</span><div class="bar"><div id="bar-bounce" class="fill"></div></div></div>
-                        <div class="stat-row"><span>Friction</span><div class="bar"><div id="bar-friction" class="fill"></div></div></div>
-                        <div class="stat-row"><span>Weight</span><div class="bar"><div id="bar-weight" class="fill"></div></div></div>
+                <div class="panel gear-panel-premium pop-in">
+                    <div class="gear-split-layout">
+                        <!-- LEFT: STANDARDS & STATS -->
+                        <div class="gear-stats-column">
+                            <h2 class="sub-page-title">BALL STANDARDS</h2>
+                            <div class="ball-visual-box">
+                                <div id="ball-display-large" class="ball-large-premium gear-pulse"></div>
+                                <h3 id="ball-name-display" class="gear-ball-name">STANDARD GOLF</h3>
+                            </div>
+                            <div class="stats-bars-modern">
+                                <div class="stat-row-premium">
+                                    <span>BOUNCE</span>
+                                    <div class="bar-root">
+                                        <div id="bar-bounce" class="fill"></div>
+                                    </div>
+                                </div>
+                                <div class="stat-row-premium">
+                                    <span>FRICTION</span>
+                                    <div class="bar-root">
+                                        <div id="bar-friction" class="fill"></div>
+                                    </div>
+                                </div>
+                                <div class="stat-row-premium">
+                                    <span>WEIGHT</span>
+                                    <div class="bar-root">
+                                        <div id="bar-weight" class="fill"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="inventory-section">
+                                <p class="section-hint">Select Performance Type</p>
+                                <div class="ball-inventory-grid" id="ball-inventory">
+                                    <!-- Populated by Types (Standard, Bouncy, etc.) -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- RIGHT: COLOR CATALOG -->
+                        <div class="gear-catalog-column">
+                            <h2 class="sub-page-title">COLOR CATALOG</h2>
+                            <div class="color-scroll-container">
+                                <div class="color-grid-premium" id="color-catalog-grid">
+                                    <!-- 30+ Colors populated by JS -->
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="ball-inventory" id="ball-inventory">
-                    <!-- Populated by JS -->
                 </div>
             </div>
 
@@ -136,10 +210,11 @@
             <div id="screen-multiplayer" class="screen">
                 <button class="back-btn btn-nav" data-target="screen-main-menu" id="btn-leave-lobby">↩ BACK</button>
                 <h2 class="page-title">MULTIPLAYER CAFE</h2>
-                
+
                 <div id="mp-join-section" class="panel slide-up">
                     <p>Enter your name and a room code to play with friends!</p>
-                    <input type="text" id="username-input" placeholder="Your Name (e.g. Viktor)" class="fun-input" maxlength="12">
+                    <input type="text" id="username-input" placeholder="Your Name (e.g. Viktor)" class="fun-input"
+                        maxlength="12">
                     <input type="text" id="room-input" placeholder="Room Code (e.g. party1)" class="fun-input">
                     <button id="btn-join-room" class="super-btn small-btn">JOIN / CREATE</button>
                     <p id="mp-status" class="status-msg">Disconnected.</p>
@@ -147,7 +222,7 @@
 
                 <div id="mp-room-section" class="panel hidden">
                     <h3>Room: <span id="display-room-id" style="color:#FFC107">---</span></h3>
-                    
+
                     <div class="players-slots">
                         <!-- Up to 4 players -->
                         <div class="player-slot" id="slot-p1">
@@ -188,71 +263,129 @@
             <!-- 7. SETTINGS & HOW TO PLAY -->
             <div id="screen-settings" class="screen">
                 <button class="back-btn btn-nav" data-target="screen-main-menu">↩ BACK</button>
-                
-                <div class="panel bounce-in">
-                    <button class="super-btn blue-btn btn-nav" data-target="screen-how-to-play" style="width: 100%; margin-bottom: 20px; font-size:1.5rem;">❓ HOW TO PLAY</button>
-                    
-                    <h2 class="page-title" style="font-size: 2rem;">SETTINGS</h2>
-                    <div class="setting-row">
-                        <span>🔊 Master Volume</span>
-                        <input type="range" class="fun-slider" min="0" max="100" value="80">
+
+                <div class="panel settings-card pop-in">
+                    <h2 class="page-title">GAME SETTINGS</h2>
+
+                    <div class="setting-group-premium">
+                        <div class="setting-item-modern">
+                            <div class="setting-item-head">
+                                <span class="setting-label-icon"></span>
+                                <span class="setting-label">Master Volume</span>
+                            </div>
+                            <input type="range" id="vol-master" class="premium-slider" min="0" max="100" value="80">
+                        </div>
+
+                        <div class="setting-item-modern">
+                            <div class="setting-item-head">
+                                <span class="setting-label-icon"></span>
+                                <span class="setting-label">Music Volume</span>
+                            </div>
+                            <input type="range" id="vol-music" class="premium-slider" min="0" max="100" value="50">
+                        </div>
                     </div>
-                    <div class="setting-row">
-                        <span>🎵 Music</span>
-                        <input type="range" class="fun-slider" min="0" max="100" value="50">
+
+                    <div class="controls-section-premium">
+                        <h3 class="section-title">Controls</h3>
+                        <div class="control-row">
+                            <div class="control-key">CLICK & DRAG</div>
+                            <div class="control-desc">Aim & Set Power</div>
+                        </div>
+                        <div class="control-row">
+                            <div class="control-key">RELEASE</div>
+                            <div class="control-desc">Shoot Ball</div>
+                        </div>
+                        <div class="control-row">
+                            <div class="control-key">ESC</div>
+                            <div class="control-desc">Pause Menu</div>
+                        </div>
                     </div>
-                    
-                    <div class="controls-cheat-sheet">
-                        <h3>Game Controls</h3>
-                        <div class="control-item"><span class="key">🖱️ Click & Drag</span> <span>Aim and set power</span></div>
-                        <div class="control-item"><span class="key">👆 Release</span> <span>Shoot the ball</span></div>
-                        <div class="control-item"><span class="key">❌ Esc</span> <span>Pause game</span></div>
-                    </div>
+
+                    <button class="super-btn blue-btn btn-nav" data-target="screen-how-to-play"
+                        style="width: 100%; margin-top: 20px;">HOW TO PLAY</button>
                 </div>
             </div>
 
             <!-- 8. HOW TO PLAY (Sub-screen) -->
             <div id="screen-how-to-play" class="screen floating-layer">
-                <div class="panel big-panel">
+                <div class="panel tutorial-card pop-in">
                     <h2 class="page-title">HOW TO PLAY</h2>
-                    
-                    <div class="instruction-steps">
-                        <div class="step-card">
-                            <div class="step-img">👆</div>
-                            <p><strong>1. Touch & Drag</strong><br>Anywhere on screen to aim.</p>
+
+                    <div class="tutorial-grid">
+                        <div class="tutorial-step">
+                            <div class="step-num-bubble">1</div>
+                            <div class="step-content">
+                                <strong>DRAG ANYWHERE</strong>
+                                <p>Touch the screen and slide to aim your shot.</p>
+                            </div>
                         </div>
-                        <div class="step-card">
-                            <div class="step-img">📏</div>
-                            <p><strong>2. Pull Back</strong><br>To increase shot power!</p>
+                        <div class="tutorial-step">
+                            <div class="step-num-bubble">2</div>
+                            <div class="step-content">
+                                <strong>PULL BACK</strong>
+                                <p>The further you pull, the more power you get!</p>
+                            </div>
                         </div>
-                        <div class="step-card">
-                            <div class="step-img">⛳</div>
-                            <p><strong>3. Release</strong><br>To smash the ball into the hole.</p>
+                        <div class="tutorial-step">
+                            <div class="step-num-bubble">3</div>
+                            <div class="step-content">
+                                <strong>RELEASE</strong>
+                                <p>Release to launch the ball towards the hole.</p>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="hazard-legend">
-                        <div><span style="color:#e4cd85;">🟨 Sand:</span> Slows you down!</div>
-                        <div><span style="color:#3ca1df;">🟦 Water:</span> +1 stroke penalty!</div>
                     </div>
 
-                    <button class="super-btn btn-nav" data-target="screen-settings" style="margin-top:20px;">GOT IT!</button>
+                    <div class="hazard-section-tutorial">
+                        <div class="hazard-card sand">
+                            <strong>SAND PIT</strong>
+                            <span>Slows the ball significantly.</span>
+                        </div>
+                        <div class="hazard-card water">
+                            <strong>WATER LAKES</strong>
+                            <span>Drowns ball. +1 stroke penalty.</span>
+                        </div>
+                    </div>
+
+                    <button class="super-btn btn-nav" data-target="screen-settings"
+                        style="margin-top:20px; width: 100%;">I'VE GOT IT!</button>
                 </div>
             </div>
 
             <!-- 9. PROFILE -->
             <div id="screen-profile" class="screen">
                 <button class="back-btn btn-nav" data-target="screen-main-menu">↩ BACK</button>
-                <div class="panel profile-panel slide-up">
-                    <div class="profile-header">
-                        <div class="large-avatar">👤</div>
-                        <h2>Guest Player</h2>
-                        <p>Beginner Golfer</p>
+                <div class="panel profile-card pop-in">
+                    <div class="profile-header-premium">
+                        <div class="profile-avatar-editable" id="p-avatar-circle">G</div>
+                        <div class="profile-name-edit">
+                            <input type="text" id="p-username-input" class="premium-input" placeholder="Enter Name..."
+                                maxlength="12">
+                            <span class="edit-hint">Click name to edit</span>
+                        </div>
+                        <p class="profile-rank">Golf Enthusiast</p>
                     </div>
-                    <div class="profile-stats">
-                        <div class="stat-box"><span>Holes Played</span><strong>12</strong></div>
-                        <div class="stat-box"><span>Total Strokes</span><strong>45</strong></div>
-                        <div class="stat-box"><span>Balls Unlocked</span><strong>4/5</strong></div>
+
+                    <div class="profile-stats-grid">
+                        <div class="stat-card">
+                            <span class="stat-label">Holes Finished</span>
+                            <span class="stat-value" id="p-holes">0</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Total Strokes</span>
+                            <span class="stat-value" id="p-strokes">0</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Stars Earned</span>
+                            <span class="stat-value" id="p-stars">0</span>
+                        </div>
+                    </div>
+
+                    <div class="profile-progress-section">
+                        <h3>Game Progress</h3>
+                        <div id="p-progress-bar-container" class="large-progress-bar">
+                            <div id="p-progress-fill" class="fill"></div>
+                        </div>
+                        <p id="p-progress-text">0 / 20 Levels Cleared</p>
                     </div>
                 </div>
             </div>
@@ -260,11 +393,33 @@
             <!-- 10. LEADERBOARD -->
             <div id="screen-leaderboard" class="screen">
                 <button class="back-btn btn-nav" data-target="screen-main-menu">↩ BACK</button>
-                <h2 class="page-title">GLOBAL RANKING</h2>
-                <div class="panel leaderboard-panel">
-                    <div id="lb-list" class="leaderboard-list">
-                        <p>Loading ranking...</p>
-                        <!-- Populated by JS -->
+                <div class="panel leaderboard-card pop-in">
+                    <h2 class="page-title" style="margin-bottom: 10px;">CHAMPIONSHIP</h2>
+
+                    <!-- New Level Selector: Button + Clickable Grid -->
+                    <div class="lb-selector-wrapper">
+                        <button id="btn-lb-level-select" class="lb-trigger-btn">
+                            <span id="lb-current-lvl-label">LEVEL 1</span>
+                            <span class="lb-arrow-icon">▼</span>
+                        </button>
+
+                        <div id="lb-grid-overlay" class="lb-levels-overlay hidden">
+                            <div class="lb-grid-container" id="lb-level-grid">
+                                <!-- 40 Circles injected by JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="leaderboard-container">
+                        <div class="lb-header">
+                            <span class="lb-h-rank">RANK</span>
+                            <span class="lb-h-name">PLAYER</span>
+                            <span class="lb-h-score">SHOTS</span>
+                        </div>
+                        <div id="lb-list" class="leaderboard-list-premium">
+                            <p class="lb-loading">Searching for champions...</p>
+                            <!-- Populated by JS -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -283,12 +438,24 @@
             <!-- LEVEL COMPLETE -->
             <div id="level-complete" class="screen">
                 <div class="panel pop-in text-center">
-                    <h2 class="huge-text glowing">HOLE IN ONE!</h2>
+                    <h2 class="huge-text glowing" id="lc-title">HOLE IN ONE!</h2>
+                    <p style="font-family: var(--font-heading); font-size: 1.2rem; color: #4a5568;">PAR FOR THIS HOLE:
+                        <span id="lc-par" style="color: var(--btn-blue);">0</span>
+                    </p>
+
+                    <div id="lc-stars-container" class="stars-display">
+                        <span class="star" id="lc-s1">☆</span>
+                        <span class="star" id="lc-s2">☆</span>
+                        <span class="star" id="lc-s3">☆</span>
+                    </div>
+
                     <div id="lc-scoreboard" class="multi-scoreboard">
                         <!-- Rows injected by JS -->
                     </div>
-                    <div style="margin-top: 20px;">
-                        <button id="btn-next-level" class="super-btn">NEXT LEVEL</button>
+
+                    <div class="lc-actions">
+                        <button id="btn-next-level" class="super-btn green-btn">NEXT LEVEL</button>
+                        <button class="super-btn btn-nav orange-btn" data-target="screen-levels">LEVEL SELECT</button>
                     </div>
                 </div>
             </div>
@@ -296,22 +463,49 @@
             <div id="game-over" class="screen">
                 <div class="panel pop-in text-center">
                     <h2 class="huge-text">GAME OVER!</h2>
-                    <h3 id="winner-announcement" style="color: gold; margin: 10px 0; font-size: 2rem;">PLAYER 1 WINS!</h3>
+                    <h3 id="winner-announcement" style="color: gold; margin: 10px 0; font-size: 2rem;">PLAYER 1 WINS!
+                    </h3>
                     <div id="go-scoreboard" class="multi-scoreboard">
                         <!-- Rows injected by JS -->
                     </div>
-                    <button class="super-btn btn-nav" data-target="screen-main-menu" style="margin-top:20px;">BACK TO MENU</button>
+                    <button class="super-btn btn-nav" data-target="screen-main-menu" style="margin-top:20px;">BACK TO
+                        MENU</button>
                 </div>
             </div>
 
+            <!-- 10. REWARDS & SPIN -->
+            <div id="screen-rewards" class="screen">
+                <button class="back-btn btn-nav" data-target="screen-main-menu">↩ BACK</button>
+                <div class="panel rewards-panel pop-in">
+                    <h2 class="page-title">LUCKY SPIN</h2>
+                    <div class="points-display">
+                        <span class="points-icon"></span>
+                        <span id="player-points">0</span>
+                        <span class="points-label">POINTS</span>
+                    </div>
+
+                    <div class="roulette-container">
+                        <div id="roulette-inner" class="roulette-wheel">
+                            <!-- Spinning colors injected by JS -->
+                            <div class="pointer">▼</div>
+                            <div id="roulette-result" class="result-box">?</div>
+                        </div>
+                    </div>
+
+                    <div class="spin-actions">
+                        <p class="cost-hint">COST: 100 POINTS</p>
+                        <button id="btn-spin" class="super-btn purple-btn">SPIN NOW!</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    
+
     <script>
         // Fallback if config.js is missing in production/Vercel
         if (typeof window.PROJECT_CONFIG === 'undefined') {
             window.PROJECT_CONFIG = {
-                SUPABASE_URL: "", 
+                SUPABASE_URL: "",
                 SUPABASE_ANON_KEY: ""
             };
         }
@@ -319,4 +513,5 @@
     <script src="config.js" onerror="console.log('Using environment fallbacks')"></script>
     <script src="game.js"></script>
 </body>
+
 </html>
