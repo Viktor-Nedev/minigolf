@@ -1673,7 +1673,113 @@ h4 {
 .m-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
 .m-reward-tag { background: #ebf8ff; color: #3182ce; padding: 5px 12px; border-radius: 10px; font-family: var(--font-heading); font-size: 0.9rem; font-weight: 900; }
 .btn-claim { 
-    background: var(--btn-green); color: white; border: none; padding: 8px 15px; border-radius: 10px;
-    font-family: var(--font-heading); cursor: pointer; animation: missionPulse 1.5s infinite;
+    background: var(--btn-purple); color: white; border: none; padding: 8px 18px; border-radius: 12px;
+    font-family: var(--font-heading); cursor: pointer; animation: missionPulsePurple 1.5s infinite;
+    text-transform: uppercase; font-weight: 900; letter-spacing: 1px;
 }
-@keyframes missionPulse { 0% { box-shadow: 0 0 0 0 rgba(72, 187, 120, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(72, 187, 120, 0); } 100% { box-shadow: 0 0 0 0 rgba(72, 187, 120, 0); } }
+@keyframes missionPulsePurple { 0% { box-shadow: 0 0 0 0 rgba(159, 122, 234, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(159, 122, 234, 0); } 100% { box-shadow: 0 0 0 0 rgba(159, 122, 234, 0); } }
+
+/* Victory Screen (Level Complete) Redesign - Compact Version */
+.victory-overlay { 
+    background: rgba(255, 255, 255, 0.4); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(12px);
+}
+.confetti-layer { position: absolute; inset: 0; pointer-events: none; z-index: 10; overflow: hidden; }
+
+.victory-card {
+    background: white; border-radius: 30px; padding: 2rem;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.15), 0 0 30px rgba(236, 201, 75, 0.1); 
+    max-width: 420px; width: 92%; text-align: center; position: relative; z-index: 20;
+    border: 3px solid #f6e05e;
+}
+
+.victory-header { margin-bottom: 1rem; }
+
+.victory-title { 
+    font-family: var(--font-heading); font-size: 2.2rem; color: #1a202c; letter-spacing: -0.5px;
+    background: linear-gradient(135deg, #2d3748 0%, #718096 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    animation: titleZoom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+@keyframes titleZoom { from { opacity: 0; transform: scale(0.8); } }
+
+.victory-stats-row { display: flex; justify-content: center; align-items: center; gap: 30px; margin-bottom: 1.2rem; }
+.v-stat-box { display: flex; flex-direction: column; gap: 2px; }
+.v-label { font-family: var(--font-heading); color: #a0aec0; font-size: 0.8rem; letter-spacing: 1px; }
+.v-value { font-family: var(--font-heading); font-size: 1.8rem; color: #2d3748; }
+.v-stat-divider { width: 1px; height: 35px; background: #edf2f7; }
+
+.victory-stars { display: flex; justify-content: center; gap: 10px; margin-bottom: 1.5rem; }
+.v-star { font-size: 3rem; color: #f6e05e; filter: drop-shadow(0 0 8px rgba(246, 224, 94, 0.4)); transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.v-star.s-hidden { opacity: 0; transform: scale(0); }
+
+.victory-actions { display: flex; flex-direction: column; gap: 10px; align-items: center; width: 100%; }
+.victory-btn { width: 100%; padding: 0.9rem; font-size: 1.1rem; border-radius: 15px; }
+.victory-btn.secondary { background: #f8fafc !important; color: #64748b !important; border: 2px solid #f1f5f9; }
+
+
+.confetti-piece {
+    position: absolute; width: 10px; height: 10px; border-radius: 2px;
+    animation: confettiFall 3s linear infinite; top: -20px;
+}
+@keyframes confettiFall {
+    0% { transform: translateY(0) rotate(0); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+.pop-in-bounce { animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+@keyframes popIn { from { opacity: 0; transform: translateY(30px) scale(0.9); } }
+
+/* NEW IN-GAME HUD STYLES */
+.hud-back-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    padding: 10px 22px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    color: white;
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    z-index: 100;
+    pointer-events: auto;
+    transition: 0.2s;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+.hud-back-btn:hover { background: rgba(0, 0, 0, 0.8); transform: scale(1.05); }
+
+.hud-multi-container {
+    position: absolute;
+    top: 75px; /* Sits exactly below the BACK button */
+    left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.hud-p-box {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 8px 18px;
+    border-radius: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 25px;
+    min-width: 140px;
+    border-left: 8px solid #ccc;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    pointer-events: none;
+}
+
+.hud-p-box .p-name { font-family: var(--font-heading); font-size: 0.85rem; letter-spacing: 0.5px; }
+.hud-p-box .p-score { font-family: var(--font-heading); font-size: 1.6rem; color: #000000; }
+
+.hud-p-box.active-turn {
+    background: white;
+    transform: scale(1.08);
+    box-shadow: 0 0 25px rgba(255,255,255,0.6);
+    z-index: 5;
+}
+

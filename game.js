@@ -21,40 +21,40 @@ const LEVELS = [
     { name: "Moving Block", par: 3, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 }, { x: 200, y: 400, w: 200, h: 40, vx: 2, minX: 70, maxX: 330 }], hazards: [] },
     { name: "Zig Zag", par: 5, startInfo: { x: 100, y: 800 }, hole: { x: 500, y: 100 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 }, { x: 50, y: 600, w: 400, h: 20 }, { x: 150, y: 400, w: 400, h: 20 }, { x: 50, y: 200, w: 400, h: 20 }], hazards: [] },
     { name: "Double Trouble", par: 4, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 }, { x: 70, y: 300, w: 200, h: 40, vx: 2, minX: 70, maxX: 200 }, { x: 330, y: 500, w: 200, h: 40, vx: -2, minX: 200, maxX: 330 }], hazards: [] },
-    { name: "Island Hop", par: 4, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 }], hazards: [{ type: 'water', x: 70, y: 300, w: 460, h: 300 }, { type: 'bridge', x: 150, y: 400, w: 100, h: 110 }, { type: 'bridge', x: 350, y: 400, w: 100, h: 110 }] },
+    { name: "Island Hop", par: 3, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [], hazards: [{ type: 'water', x: 0, y: 300, w: 600, h: 300 }, { type: 'bridge', x: 250, y: 300, w: 100, h: 300, vx: 3, minX: 50, maxX: 450 }] },
     { name: "The Pinball", par: 4, startInfo: { x: 150, y: 800 }, hole: { x: 450, y: 100 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 }, { x: 220, y: 250, w: 50, h: 50 }, { x: 350, y: 350, w: 50, h: 50 }, { x: 220, y: 450, w: 50, h: 50 }, { x: 350, y: 550, w: 50, h: 50 }], hazards: [] },
-    { name: "Walled City", par: 5, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 450 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 }, { x: 200, y: 300, w: 20, h: 300 }, { x: 380, y: 300, w: 20, h: 300 }, { x: 200, y: 300, w: 200, h: 20 }], hazards: [] },
+    { name: "Walled City", par: 4, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 200 }, walls: [{ x: 100, y: 500, w: 400, h: 30 }, { x: 200, y: 350, w: 200, h: 20, vx: 4, minX: 0, maxX: 400 }], hazards: [] },
     { name: "Quick Reflexes", par: 3, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 }, { x: 100, y: 450, w: 400, h: 20, vx: 5, minX: 50, maxX: 150 }], hazards: [] },
-    { name: "Sandy Dunes", par: 4, startInfo: { x: 100, y: 800 }, hole: { x: 500, y: 100 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 }], hazards: [{ type: 'sand', x: 200, y: 70, w: 50, h: 700 }, { type: 'sand', x: 350, y: 70, w: 50, h: 700 }] },
-    { name: "Bridge Over Troubled", par: 3, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 }], hazards: [{ type: 'water', x: 70, y: 400, w: 460, h: 100 }, { type: 'bridge', x: 250, y: 400, w: 100, h: 100 }] },
-    { name: "Piston Pump", par: 4, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 }, { x: 250, y: 400, w: 100, h: 100, vy: 3, minY: 200, maxY: 600 }], hazards: [] },
+    { name: "Sandy Dunes", par: 4, startInfo: { x: 150, y: 800 }, hole: { x: 450, y: 100 }, walls: [{ x: 280, y: 200, w: 40, h: 500 }], hazards: [{ type: 'sand', x: 150, y: 400, w: 300, h: 150, vx: 2, minX: 50, maxX: 250 }] },
+    { name: "Bridge Over Troubled", par: 3, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 100, y: 300, w: 150, h: 20, vx: 2, minX: 0, maxX: 200 }, { x: 400, y: 500, w: 150, h: 20, vx: -2, minX: 200, maxX: 450 }], hazards: [{ type: 'water', x: 0, y: 350, w: 600, h: 200 }, { type: 'bridge', x: 250, y: 350, w: 100, h: 200 }] },
+    { name: "Piston Pump", par: 4, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 200, y: 400, w: 200, h: 60, vy: 4, minY: 200, maxY: 600 }, { x: 50, y: 400, w: 100, h: 60, vy: -4, minY: 200, maxY: 600 }, { x: 450, y: 400, w: 100, h: 60, vy: -4, minY: 200, maxY: 600 }], hazards: [] },
     { name: "The Gauntlet", par: 5, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 }, { x: 70, y: 200, w: 250, h: 20 }, { x: 280, y: 400, w: 250, h: 20 }, { x: 70, y: 600, w: 250, h: 20 }], hazards: [{ type: 'sand', x: 350, y: 200, w: 100, h: 100 }] },
-    { name: "Narrow Path", par: 3, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 240, h: 780 }, { x: 310, y: 70, w: 240, h: 780 }], hazards: [] },
+    { name: "Narrow Path", par: 3, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 180, y: 200, w: 30, h: 500 }, { x: 390, y: 200, w: 30, h: 500 }, { x: 210, y: 350, w: 100, h: 30, vx: 5, minX: 210, maxX: 290 }], hazards: [] },
     { name: "Water Hazard", par: 4, startInfo: { x: 100, y: 800 }, hole: { x: 500, y: 100 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 }], hazards: [{ type: 'water', x: 200, y: 70, w: 200, h: 780 }, { type: 'bridge', x: 200, y: 400, w: 200, h: 50 }] },
     { name: "Crazy Blocks", par: 5, startInfo: { x: 150, y: 800 }, hole: { x: 450, y: 100 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 }, { x: 150, y: 600, w: 100, h: 20, vx: 2, minX: 100, maxX: 300 }, { x: 350, y: 400, w: 100, h: 20, vx: -3, minX: 200, maxX: 400 }, { x: 150, y: 200, w: 100, h: 20, vx: 4, minX: 100, maxX: 400 }], hazards: [] },
     { name: "Twin Tunnels", par: 4, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 }, { x: 200, y: 300, w: 50, h: 300 }, { x: 350, y: 300, w: 50, h: 300 }, { x: 250, y: 300, w: 100, h: 20 }], hazards: [] },
     { name: "The Ultimate Challenge", par: 6, startInfo: { x: 100, y: 800 }, hole: { x: 500, y: 100 }, walls: [{ x: 30, y: 30, w: 540, h: 20 }, { x: 30, y: 870, w: 540, h: 20 }, { x: 30, y: 50, w: 20, h: 820 }, { x: 550, y: 50, w: 20, h: 820 }, { x: 200, y: 600, w: 150, h: 20, vx: 3, minX: 50, maxX: 400 }, { x: 250, y: 300, w: 150, h: 20, vx: -4, minX: 50, maxX: 400 }], hazards: [{ type: 'water', x: 50, y: 400, w: 280, h: 150 }, { type: 'water', x: 270, y: 150, w: 280, h: 100 }, { type: 'bridge', x: 250, y: 400, w: 80, h: 150 }, { type: 'sand', x: 100, y: 100, w: 150, h: 150 }] },
     // NEW LEVELS 21-40
     { name: "Wall Warp", par: 3, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 70, w: 20, h: 780 }, { x: 530, y: 70, w: 20, h: 780 }, { x: 100, y: 300, w: 400, h: 40 }, { x: 300, y: 500, w: 20, h: 300 }], hazards: [] },
-    { name: "Slalom Run", par: 4, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 50 }, walls: [{ x: 50, y: 0, w: 20, h: 900 }, { x: 530, y: 0, w: 20, h: 900 }], hazards: [{ type: 'sand', x: 70, y: 200, w: 200, h: 40 }, { type: 'sand', x: 330, y: 400, w: 200, h: 40 }, { type: 'sand', x: 70, y: 600, w: 200, h: 40 }] },
-    { name: "Cross Traffic", par: 4, startInfo: { x: 100, y: 800 }, hole: { x: 500, y: 100 }, walls: [{ x: 250, y: 100, w: 40, h: 700, vy: 5, minY: 100, maxY: 700 }], hazards: [] },
-    { name: "The Ring", par: 3, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 300 }, walls: [{ x: 200, y: 200, w: 200, h: 20 }, { x: 200, y: 400, w: 200, h: 20 }, { x: 200, y: 200, w: 20, h: 200 }, { x: 380, y: 200, w: 20, h: 200 }], hazards: [] },
+    { name: "Slalom Run", par: 4, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 50 }, walls: [{ x: 100, y: 200, w: 300, h: 20, vx: 5, minX: 50, maxX: 250 }, { x: 200, y: 400, w: 300, h: 20, vx: -5, minX: 100, maxX: 300 }, { x: 100, y: 600, w: 300, h: 20, vx: 6, minX: 50, maxX: 250 }], hazards: [] },
+    { name: "Cross Traffic", par: 4, startInfo: { x: 300, y: 850 }, hole: { x: 300, y: 100 }, walls: [{ x: 50, y: 250, w: 250, h: 30, vx: 6, minX: 0, maxX: 350 }, { x: 350, y: 400, w: 250, h: 30, vx: -7, minX: 0, maxX: 350 }, { x: 50, y: 550, w: 250, h: 30, vx: 8, minX: 0, maxX: 350 }, { x: 350, y: 700, w: 250, h: 30, vx: -9, minX: 0, maxX: 350 }], hazards: [] },
+    { name: "The Ring", par: 4, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 200 }, walls: [{ x: 200, y: 150, w: 200, h: 30, vx: 5, minX: 50, maxX: 350 }, { x: 200, y: 250, w: 200, h: 30, vx: -5, minX: 50, maxX: 350 }, { x: 200, y: 150, w: 30, h: 100, vy: 4, minY: 50, maxY: 350 }, { x: 370, y: 150, w: 30, h: 100, vy: -4, minY: 50, maxY: 350 }], hazards: [] },
     { name: "Double Maze", par: 5, startInfo: { x: 100, y: 850 }, hole: { x: 500, y: 50 }, walls: [{ x: 50, y: 700, w: 400, h: 20 }, { x: 150, y: 500, w: 400, h: 20 }, { x: 50, y: 300, w: 400, h: 20 }], hazards: [] },
-    { name: "Water Tunnel", par: 3, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 200, y: 0, w: 20, h: 900 }, { x: 380, y: 0, w: 20, h: 900 }], hazards: [{ type: 'water', x: 220, y: 300, w: 160, h: 300 }, { type: 'bridge', x: 220, y: 400, w: 160, h: 100 }] },
-    { name: "Speed Trap", par: 2, startInfo: { x: 300, y: 850 }, hole: { x: 300, y: 50 }, walls: [{ x: 50, y: 400, w: 500, h: 20, vx: 8, minX: 50, maxX: 300 }], hazards: [] },
-    { name: "Spiral", par: 4, startInfo: { x: 100, y: 100 }, hole: { x: 300, y: 450 }, walls: [{ x: 50, y: 50, w: 500, h: 20 }, { x: 550, y: 50, w: 20, h: 800 }, { x: 50, y: 850, w: 500, h: 20 }, { x: 50, y: 250, w: 20, h: 600 }, { x: 50, y: 250, w: 350, h: 20 }], hazards: [] },
-    { name: "Bridge Hero", par: 4, startInfo: { x: 300, y: 850 }, hole: { x: 300, y: 50 }, hazards: [{ type: 'water', x: 0, y: 200, w: 600, h: 500 }, { type: 'bridge', x: 280, y: 200, w: 40, h: 500 }] },
+    { name: "Water Tunnel", par: 4, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [], hazards: [{ type: 'water', x: 0, y: 250, w: 600, h: 400 }, { type: 'bridge', x: 50, y: 250, w: 120, h: 400, vx: 1.5, minX: 0, maxX: 480 }] },
+    { name: "Speed Trap", par: 3, startInfo: { x: 300, y: 850 }, hole: { x: 300, y: 50 }, walls: [{ x: 50, y: 300, w: 300, h: 30, vx: 8, minX: 0, maxX: 300 }, { x: 250, y: 550, w: 300, h: 30, vx: -8, minX: 0, maxX: 300 }], hazards: [] },
+    { name: "Spiral", par: 5, startInfo: { x: 100, y: 800 }, hole: { x: 500, y: 100 }, walls: [{ x: 50, y: 200, w: 450, h: 30, vx: 5, minX: 0, maxX: 150 }, { x: 100, y: 400, w: 450, h: 30, vx: -6, minX: 0, maxX: 150 }, { x: 50, y: 600, w: 450, h: 30, vx: 7, minX: 0, maxX: 150 }], hazards: [] },
+    { name: "Bridge Hero", par: 5, startInfo: { x: 300, y: 850 }, hole: { x: 300, y: 50 }, walls: [], hazards: [{ type: 'water', x: 0, y: 150, w: 600, h: 600 }, { type: 'bridge', x: 250, y: 150, w: 100, h: 600 }] },
     { name: "Block Party", par: 5, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 100, y: 250, w: 60, h: 60 }, { x: 250, y: 350, w: 60, h: 60 }, { x: 400, y: 450, w: 60, h: 60 }, { x: 100, y: 550, w: 60, h: 60 }], hazards: [] },
-    { name: "Moving Sand", par: 3, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, hazards: [{ type: 'sand', x: 50, y: 300, w: 150, h: 150, vx: 2, minX: 50, maxX: 400 }] },
-    { name: "The Corridors", par: 4, startInfo: { x: 100, y: 800 }, hole: { x: 500, y: 100 }, walls: [{ x: 200, y: 0, w: 20, h: 700 }, { x: 400, y: 200, w: 20, h: 700 }], hazards: [] },
-    { name: "Island Queen", par: 4, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 150 }, hazards: [{ type: 'water', x: 50, y: 50, w: 500, h: 700 }, { type: 'bridge', x: 250, y: 300, w: 100, h: 100 }] },
-    { name: "Tight Squeeze", par: 3, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 50 }, walls: [{ x: 50, y: 200, w: 220, h: 20 }, { x: 330, y: 200, w: 220, h: 20 }], hazards: [] },
-    { name: "Bouncing Madness", par: 4, startInfo: { x: 100, y: 450 }, hole: { x: 500, y: 450 }, walls: [{ x: 250, y: 50, w: 50, h: 800 }], hazards: [] },
-    { name: "Long Shot", par: 2, startInfo: { x: 300, y: 850 }, hole: { x: 300, y: 50 }, hazards: [{ type: 'sand', x: 100, y: 200, w: 400, h: 400 }] },
-    { name: "Checkers", par: 5, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 100, y: 200, w: 40, h: 40 }, { x: 200, y: 300, w: 40, h: 40 }, { x: 300, y: 200, w: 40, h: 40 }, { x: 400, y: 300, w: 40, h: 40 }], hazards: [] },
-    { name: "Gravity Pit", par: 4, startInfo: { x: 100, y: 100 }, hole: { x: 500, y: 800 }, hazards: [{ type: 'water', x: 200, y: 200, w: 200, h: 400 }] },
-    { name: "Final Lap", par: 5, startInfo: { x: 300, y: 850 }, hole: { x: 300, y: 50 }, walls: [{ x: 100, y: 100, w: 400, h: 20 }, { x: 100, y: 700, w: 400, h: 20 }], hazards: [{ type: 'sand', x: 50, y: 300, w: 500, h: 200 }] },
-    { name: "The Grand Finale", par: 6, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 50, y: 450, w: 500, h: 20 }], hazards: [{ type: 'water', x: 50, y: 150, w: 500, h: 250 }, { type: 'bridge', x: 250, y: 150, w: 100, h: 250 }, { type: 'sand', x: 200, y: 500, w: 200, h: 200 }] }
+    { name: "Moving Sand", par: 4, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 50, y: 350, w: 200, h: 20, vx: 2, minX: 50, maxX: 150 }, { x: 350, y: 350, w: 200, h: 20, vx: -2, minX: 250, maxX: 350 }], hazards: [{ type: 'sand', x: 0, y: 200, w: 450, h: 100, vx: 1.2, minX: 0, maxX: 150 }, { type: 'sand', x: 150, y: 400, w: 450, h: 100, vx: -1.5, minX: 0, maxX: 150 }, { type: 'sand', x: 0, y: 600, w: 450, h: 100, vx: 1.1, minX: 0, maxX: 150 }] },
+    { name: "The Corridors", par: 4, startInfo: { x: 100, y: 800 }, hole: { x: 500, y: 100 }, walls: [{ x: 200, y: 0, w: 20, h: 600, vy: 2, minY: 0, maxY: 300 }, { x: 400, y: 300, w: 20, h: 600, vy: -2, minY: 0, maxY: 300 }], hazards: [] },
+    { name: "Island Queen", par: 4, startInfo: { x: 300, y: 850 }, hole: { x: 300, y: 50 }, walls: [{ x: 100, y: 400, w: 100, h: 20, vx: 2, minX: 50, maxX: 200 }, { x: 400, y: 400, w: 100, h: 20, vx: -2, minX: 300, maxX: 450 }], hazards: [{ type: 'water', x: 0, y: 150, w: 600, h: 600 }, { type: 'bridge', x: 250, y: 150, w: 100, h: 600 }] },
+    { name: "Tight Squeeze", par: 4, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 50 }, walls: [{ x: 0, y: 300, w: 240, h: 40, vx: 5, minX: 0, maxX: 150 }, { x: 360, y: 300, w: 240, h: 40 }, { x: 0, y: 500, w: 240, h: 40, vx: 7, minX: 0, maxX: 200 }, { x: 360, y: 500, w: 240, h: 40 }], hazards: [{ type: 'sand', x: 300, y: 150, w: 100, h: 100 }, { type: 'sand', x: 50, y: 650, w: 150, h: 100 }, { type: 'sand', x: 400, y: 400, w: 100, h: 100 }] },
+    { name: "Bouncing Madness", par: 4, startInfo: { x: 100, y: 450 }, hole: { x: 500, y: 450 }, walls: [{ x: 250, y: 50, w: 30, h: 300, vy: 5, minY: 50, maxY: 500 }, { x: 320, y: 550, w: 30, h: 300, vy: -6, minY: 50, maxY: 550 }], hazards: [] },
+    { name: "Long Shot", par: 4, startInfo: { x: 300, y: 850 }, hole: { x: 300, y: 50 }, walls: [], hazards: [{ type: 'sand', x: 50, y: 200, w: 500, h: 80 }, { type: 'sand', x: 50, y: 600, w: 500, h: 80 }, { type: 'water', x: 0, y: 350, w: 600, h: 150 }, { type: 'bridge', x: 100, y: 350, w: 100, h: 150, vx: 3, minX: 0, maxX: 500 }, { type: 'bridge', x: 400, y: 350, w: 100, h: 150, vx: -2, minX: 0, maxX: 500 }] },
+    { name: "Checkers", par: 5, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 200, y: 300, w: 80, h: 80, vx: 7, minX: 50, maxX: 470 }, { x: 320, y: 500, w: 80, h: 80, vx: -8, minX: 50, maxX: 470 }, { x: 100, y: 400, w: 80, h: 80, vx: 9, minX: 50, maxX: 470 }], hazards: [] },
+    { name: "Gravity Pit", par: 5, startInfo: { x: 150, y: 150 }, hole: { x: 450, y: 750 }, walls: [{ x: 350, y: 350, w: 150, h: 30, vx: -3, minX: 100, maxX: 450 }, { x: 100, y: 520, w: 150, h: 30, vx: 3, minX: 100, maxX: 450 }], hazards: [{ type: 'water', x: 0, y: 300, w: 600, h: 300 }, { type: 'bridge', x: 0, y: 300, w: 600, h: 300 }] },
+    { name: "Final Lap", par: 6, startInfo: { x: 300, y: 850 }, hole: { x: 300, y: 50 }, walls: [{ x: 0, y: 200, w: 150, h: 20, vx: 2, minX: 0, maxX: 150 }, { x: 450, y: 200, w: 150, h: 20, vx: -2, minX: 300, maxX: 450 }, { x: 0, y: 400, w: 200, h: 20, vx: 3, minX: 0, maxX: 100 }, { x: 400, y: 400, w: 100, h: 20, vx: -3, minX: 300, maxX: 500 }], hazards: [{ type: 'water', x: 0, y: 400, w: 600, h: 200 }, { type: 'bridge', x: 150, y: 400, w: 300, h: 200 }, { type: 'sand', x: 50, y: 250, w: 500, h: 80 }, { type: 'water', x: 50, y: 650, w: 550, h: 80 }, { type: 'bridge', x: 250, y: 650, w: 100, h: 80 }] },
+    { name: "The Grand Finale", par: 6, startInfo: { x: 300, y: 800 }, hole: { x: 300, y: 100 }, walls: [{ x: 50, y: 450, w: 400, h: 30, vx: 4, minX: 50, maxX: 150 }], hazards: [{ type: 'water', x: 50, y: 150, w: 500, h: 250 }, { type: 'bridge', x: 250, y: 150, w: 100, h: 250 }, { type: 'sand', x: 200, y: 500, w: 200, h: 200 }] }
 ];
 
 const BALL_TYPES = [
@@ -508,7 +508,7 @@ function initUI() {
     });
 
     // In-game Pause/Restart
-    document.getElementById('btn-pause').addEventListener('click', () => showScreen('screen-main-menu')); // lazy pause
+    document.getElementById('btn-pause').addEventListener('click', () => showScreen('screen-levels')); // back to levels
     document.getElementById('btn-next-level').addEventListener('click', () => {
         if (state.mode === 'multi' && state.myRole === 'p1') {
             broadcastLobby({ type: 'start_level', val: state.game.levelIdx + 1 });
@@ -518,7 +518,13 @@ function initUI() {
     });
 
     // Sliders
-    document.querySelector('.fun-slider').addEventListener('input', (e) => state.volume = e.target.value);
+    const volMaster = document.getElementById('vol-master');
+    if (volMaster) volMaster.addEventListener('input', (e) => state.volume = e.target.value);
+    
+    const volMusic = document.getElementById('vol-music');
+    if (volMusic) volMusic.addEventListener('input', (e) => {
+        // Logic for music volume if needed
+    });
 }
 
 // --- LOGIC: SOLO ---
@@ -751,7 +757,8 @@ function setupHUD() {
         d.className = `hud-p-box`;
         d.id = `scorebox-${r}`;
         d.style.borderColor = P_COLORS[r];
-        d.innerHTML = `<span class="p-name" style="color:${P_COLORS[r]}">${(pData.name || r).toUpperCase()}</span><span class="p-score" id="scoreval-${r}">0</span>`;
+        const labelText = (state.mode === 'solo') ? 'HITS' : (pData.name || r).toUpperCase();
+        d.innerHTML = `<span class="p-name" style="color:#000">${labelText}</span><span class="p-score" id="scoreval-${r}">0</span>`;
         cont.appendChild(d);
     });
     const lvlNum = document.getElementById('hud-level-num');
@@ -877,16 +884,19 @@ function showLevelComplete() {
     const currentPar = LEVELS[state.game.levelIdx].par;
     if (parEl) parEl.innerText = currentPar;
 
-    state.game.activePlayers.forEach(r => {
-        const p = state.game.players[r];
-        const row = document.createElement('div');
-        row.className = 'sb-row';
-        row.innerHTML = `<span style="color:${P_COLORS[r]}">${r.toUpperCase()}</span><span>${p.strokes}</span>`;
-        if (sb) sb.appendChild(row);
-    });
+    if (state.mode === 'multi') {
+        state.game.activePlayers.forEach(r => {
+            const p = state.game.players[r];
+            const row = document.createElement('div');
+            row.className = 'sb-row';
+            row.innerHTML = `<span style="color:${P_COLORS[r]}">${r.toUpperCase()}</span><span>${p.strokes}</span>`;
+            if (sb) sb.appendChild(row);
+        });
+    }
 
     if (state.mode === 'solo') {
         const strokes = state.game.players['p1'].strokes;
+        document.getElementById('lc-score').innerText = strokes;
         let earned = 1;
         if (strokes <= currentPar) earned = 3;
         else if (strokes <= currentPar + 1) earned = 2;
@@ -903,30 +913,44 @@ function showLevelComplete() {
         if (strokes === 1) updateMissionProgress('perfect', 1);
         saveLocalData();
         
-        // UI Stars
-        for(let i=1; i<=3; i++) {
-            const el = document.getElementById(`lc-s${i}`);
-            if (el) {
-                if (i <= earned) { el.classList.add('earned'); el.innerText = '★'; }
-                else { el.classList.remove('earned'); el.innerText = '☆'; }
+        // UI Animated Stars Pop-in (Centered)
+        const starsCont = document.getElementById('lc-stars-container');
+        if (starsCont) {
+            starsCont.innerHTML = '';
+            for(let i=1; i<=earned; i++) {
+                const s = document.createElement('span');
+                s.className = 'v-star s-hidden';
+                s.innerText = '★';
+                starsCont.appendChild(s);
+                setTimeout(() => s.classList.remove('s-hidden'), 600 + (i * 300));
             }
         }
-        const starsContainer = document.getElementById('lc-stars-container');
-        if (starsContainer) starsContainer.classList.remove('hidden');
         
         const nextBtn = document.getElementById('btn-next-level');
-        if (nextBtn) nextBtn.style.display = 'inline-block';
+        if (nextBtn) nextBtn.style.display = 'block';
     } else {
-        const starsContainer = document.getElementById('lc-stars-container');
-        if (starsContainer) starsContainer.classList.add('hidden');
-        
         const nextBtn = document.getElementById('btn-next-level');
-        if (nextBtn) nextBtn.style.display = state.myRole === 'p1' ? 'inline-block' : 'none';
+        if (nextBtn) nextBtn.style.display = state.myRole === 'p1' ? 'block' : 'none';
     }
 
     const title = document.getElementById('lc-title');
     if (title) title.innerText = "HOLE COMPLETE";
     showScreen('level-complete');
+    triggerConfetti();
+}
+
+function triggerConfetti() {
+    const cont = document.getElementById('confetti-container');
+    if (!cont) return;
+    cont.innerHTML = '';
+    for(let i=0; i<40; i++) {
+        const c = document.createElement('div');
+        c.className = 'confetti-piece';
+        c.style.left = Math.random()*100 + '%';
+        c.style.animationDelay = Math.random()*2 + 's';
+        c.style.backgroundColor = `hsl(${Math.random()*360}, 70%, 50%)`;
+        cont.appendChild(c);
+    }
 }
 
 function spawnHoleParticles(x, y, color) {
@@ -1002,16 +1026,6 @@ function setupInput() {
 function updatePhysics() {
     if (state.screen !== 'hud') return;
 
-    // Only process physics on host in multi, or local if solo, to prevent sync issues causing jitter.
-    // ACTUALLY, simpler: process physics locally for active player.
-    const pk = activePlayerKey();
-    const p = state.game.players[pk];
-    if (p.state !== 'moving') return;
-
-    // If multiplayer, only the person WHO SHOT computes it and sends final pos!
-    if (state.mode === 'multi' && pk !== state.myRole) return;
-
-    let inWater = false; let inSand = false; let onBridge = false;
     const lvl = LEVELS[state.game.levelIdx];
 
     // Handle moving walls
@@ -1025,6 +1039,29 @@ function updatePhysics() {
             if (w.y > w.maxY || w.y < w.minY) w.vy *= -1;
         }
     });
+
+    // Handle moving hazards
+    lvl.hazards.forEach(h => {
+        if (h.vx) {
+            h.x += h.vx;
+            if (h.x > h.maxX || h.x < h.minX) h.vx *= -1;
+        }
+        if (h.vy) {
+            h.y += h.vy;
+            if (h.y > h.maxY || h.y < h.minY) h.vy *= -1;
+        }
+    });
+
+    // Only process physics on host in multi, or local if solo, to prevent sync issues causing jitter.
+    // ACTUALLY, simpler: process physics locally for active player.
+    const pk = activePlayerKey();
+    const p = state.game.players[pk];
+    if (p.state !== 'moving') return;
+
+    // If multiplayer, only the person WHO SHOT computes it and sends final pos!
+    if (state.mode === 'multi' && pk !== state.myRole) return;
+
+    let inWater = false; let inSand = false; let onBridge = false;
 
     lvl.hazards.forEach(h => {
         if (p.x > h.x && p.x < h.x + h.w && p.y > h.y && p.y < h.y + h.h) {
@@ -1071,6 +1108,12 @@ function updatePhysics() {
                 if (dot < 0) { p.vx = (p.vx - 2 * dot * (dx / d)) * bProps.bounce; p.vy = (p.vy - 2 * dot * (dy / d)) * bProps.bounce; }
             }
         });
+
+        // Course Boundary Bounce (Keep ball inside 0-600, 0-900)
+        if (p.x < CONFIG.ballRadius) { p.x = CONFIG.ballRadius; p.vx *= -0.7; }
+        if (p.x > CONFIG.courseBaseWidth - CONFIG.ballRadius) { p.x = CONFIG.courseBaseWidth - CONFIG.ballRadius; p.vx *= -0.7; }
+        if (p.y < CONFIG.ballRadius) { p.y = CONFIG.ballRadius; p.vy *= -0.7; }
+        if (p.y > CONFIG.courseBaseHeight - CONFIG.ballRadius) { p.y = CONFIG.courseBaseHeight - CONFIG.ballRadius; p.vy *= -0.7; }
     }
 
     // Hole
@@ -1102,9 +1145,22 @@ function render() {
 
     const lvl = LEVELS[state.game.levelIdx];
 
-    // Realistic Grass
-    ctx.fillStyle = '#5ebd3e';
+    // Realistic Grass with Border
+    ctx.fillStyle = '#2d5a27'; // Dark Earth
+    ctx.fillRect(-10, -10, CONFIG.courseBaseWidth + 20, CONFIG.courseBaseHeight + 20);
+    ctx.fillStyle = '#4e9c45'; // Lush Grass
     ctx.fillRect(0, 0, CONFIG.courseBaseWidth, CONFIG.courseBaseHeight);
+    
+    // Grid/Texture effect
+    ctx.strokeStyle = 'rgba(0,0,0,0.03)';
+    ctx.lineWidth = 1;
+    for(let i=0; i<CONFIG.courseBaseWidth; i+=40) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,CONFIG.courseBaseHeight); ctx.stroke(); }
+    for(let i=0; i<CONFIG.courseBaseHeight; i+=40) { ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(CONFIG.courseBaseWidth,i); ctx.stroke(); }
+
+    // Outer Fence
+    ctx.strokeStyle = '#3d2516';
+    ctx.lineWidth = 10;
+    ctx.strokeRect(-5, -5, CONFIG.courseBaseWidth + 10, CONFIG.courseBaseHeight + 10);
 
     // Realistic Hazards
     lvl.hazards.forEach(h => {
@@ -1140,27 +1196,50 @@ function render() {
     ctx.strokeStyle = 'rgba(255,255,255,0.1)';
     ctx.stroke();
 
+    // Red Golf Flag
+    ctx.fillStyle = '#e2e8f0'; // Flag pole
+    ctx.fillRect(lvl.hole.x - 2, lvl.hole.y - 45, 4, 45);
+    ctx.fillStyle = '#e53e3e'; // Red flag
+    ctx.beginPath();
+    ctx.moveTo(lvl.hole.x + 2, lvl.hole.y - 42);
+    ctx.lineTo(lvl.hole.x + 24, lvl.hole.y - 32);
+    ctx.lineTo(lvl.hole.x + 2, lvl.hole.y - 22);
+    ctx.fill();
+
     // Aiming Visual (Scale with power)
     const pk = activePlayerKey();
     if (state.isDragging && (state.mode === 'solo' || pk === state.myRole)) {
         const p = state.game.players[pk];
-        const dx = state.dragStart.x - state.dragCurrent.x;
-        const dy = state.dragStart.y - state.dragCurrent.y;
-        const power = Math.min(Math.sqrt(dx * dx + dy * dy) * CONFIG.powerMultiplier, CONFIG.maxPower);
+        const rawDx = state.dragStart.x - state.dragCurrent.x;
+        const rawDy = state.dragStart.y - state.dragCurrent.y;
+        const dist = Math.sqrt(rawDx * rawDx + rawDy * rawDy);
+        const power = Math.min(dist * CONFIG.powerMultiplier, CONFIG.maxPower);
+        
+        // Clamp visual arrow length to max 120px
+        const maxLen = 140;
+        const angle = Math.atan2(rawDy, rawDx);
+        const drawLen = Math.min(dist, maxLen);
+        const dx = Math.cos(angle) * drawLen;
+        const dy = Math.sin(angle) * drawLen;
 
-        ctx.strokeStyle = `rgb(${power * 10}, ${255 - power * 10}, 0)`;
-        ctx.lineWidth = 4;
         ctx.lineCap = 'round';
+
+
+        // Main Arrow
+        ctx.strokeStyle = `rgb(${power * 10}, ${255 - power * 10}, 0)`;
+        ctx.lineWidth = 8;
         ctx.beginPath();
         ctx.moveTo(p.x, p.y);
         ctx.lineTo(p.x + dx, p.y + dy);
+        ctx.stroke();
         
-        // Sleek Arrow Head
-        const arrowHeadLength = 12 + (power * 0.3);
-        const angle = Math.atan2(dy, dx);
-        ctx.lineTo(p.x + dx - arrowHeadLength * Math.cos(angle - Math.PI / 6), p.y + dy - arrowHeadLength * Math.sin(angle - Math.PI / 6));
+        // Arrow Head
+        const head = 15;
+        ctx.beginPath();
         ctx.moveTo(p.x + dx, p.y + dy);
-        ctx.lineTo(p.x + dx - arrowHeadLength * Math.cos(angle + Math.PI / 6), p.y + dy - arrowHeadLength * Math.sin(angle + Math.PI / 6));
+        ctx.lineTo(p.x + dx - head * Math.cos(angle - Math.PI/6), p.y + dy - head * Math.sin(angle - Math.PI/6));
+        ctx.moveTo(p.x + dx, p.y + dy);
+        ctx.lineTo(p.x + dx - head * Math.cos(angle + Math.PI/6), p.y + dy - head * Math.sin(angle + Math.PI/6));
         ctx.stroke();
     }
 
