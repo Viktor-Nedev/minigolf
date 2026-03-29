@@ -107,7 +107,7 @@
                 <div class="panel mission-board-panel pop-in">
                     <h2 class="page-title">DAILY CHALLENGES</h2>
                     <p class="mission-desc">Complete missions to earn 25 points each!</p>
-                    
+
                     <div class="missions-3-col-grid" id="active-missions-container">
                         <!-- Dynamic columns -->
                         <div class="mission-card-premium" id="m-slot-0"></div>
@@ -173,19 +173,71 @@
             <!-- 6. MULTIPLAYER LOBBY -->
             <div id="screen-multiplayer" class="screen">
                 <button class="back-btn btn-nav" data-target="screen-main-menu" id="btn-leave-lobby">↩ BACK</button>
-                <h2 class="page-title">MULTIPLAYER CAFE</h2>
+                <h2 class="page-title">MULTIPLAYER</h2>
 
-                <div id="mp-join-section" class="panel slide-up">
-                    <p>Enter your name and a room code to play with friends!</p>
-                    <input type="text" id="username-input" placeholder="Your Name (e.g. Viktor)" class="fun-input"
-                        maxlength="12">
-                    <input type="text" id="room-input" placeholder="Room Code (e.g. party1)" class="fun-input">
-                    <button id="btn-join-room" class="super-btn small-btn">JOIN / CREATE</button>
+                <div id="mp-mode-section" class="panel slide-up">
+                    <div class="mp-mode-toggle">
+                        <button id="btn-open-create-party" class="super-btn small-btn blue-btn active">CREATE
+                            PARTY</button>
+                        <button id="btn-open-join-party" class="super-btn small-btn">JOIN PARTY</button>
+                    </div>
+
+                    <div id="mp-create-panel" class="mp-form-panel">
+                        <p>Create a party, share the code, and wait for your friends.</p>
+                        <div class="mp-create-layout">
+                            <div class="mp-create-left">
+                                <input type="text" id="create-username-input" placeholder="Your Name (e.g. Viktor)"
+                                    class="fun-input" maxlength="12">
+                                <div class="mp-setup-grid">
+                                    <div>
+                                        <span class="setup-label">Max Players</span>
+                                        <select id="create-max-players" class="fun-select">
+                                            <option value="1">1</option>
+                                            <option value="2" selected>2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <span class="setup-label">Rounds</span>
+                                        <select id="create-rounds" class="fun-select">
+                                            <option value="3">3</option>
+                                            <option value="6">6</option>
+                                            <option value="12">12</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <button id="btn-create-party" class="super-btn small-btn blue-btn"
+                                    style="margin-top:10px;">CREATE PARTY</button>
+                            </div>
+                            <div class="mp-create-right">
+                                <div class="mp-maps-panel">
+                                    <span class="setup-label">Select Maps</span>
+                                    <p class="status-msg">Tap to select maps. Need <span
+                                            id="map-select-target">3</span>, selected <span
+                                            id="map-select-count">0</span>.</p>
+                                    <div id="create-map-catalog" class="map-catalog-grid"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="mp-join-panel" class="mp-form-panel hidden">
+                        <p>Enter your name and a party code to join friends.</p>
+                        <input type="text" id="join-username-input" placeholder="Your Name (e.g. Viktor)"
+                            class="fun-input" maxlength="12">
+                        <input type="text" id="join-room-input" placeholder="Party Code (e.g. ABCDEF)" class="fun-input"
+                            maxlength="6">
+                        <button id="btn-join-party" class="super-btn small-btn">JOIN PARTY</button>
+                    </div>
+
                     <p id="mp-status" class="status-msg">Disconnected.</p>
                 </div>
 
                 <div id="mp-room-section" class="panel hidden">
-                    <h3>Room: <span id="display-room-id" style="color:#FFC107">---</span></h3>
+                    <h3>Party Code: <span id="display-room-id" style="color:#FFC107">---</span></h3>
+                    <p id="display-party-settings" class="status-msg">Players: - | Rounds: -</p>
+                    <p id="display-party-maps" class="status-msg">Maps: -</p>
 
                     <div class="players-slots">
                         <!-- Up to 4 players -->
@@ -212,12 +264,6 @@
                     </div>
 
                     <div class="lobby-controls">
-                        <div class="level-picker">
-                            <span>Level:</span>
-                            <select id="lobby-level-select" class="fun-select">
-                                <!-- Populated by JS -->
-                            </select>
-                        </div>
                         <button id="btn-ready" class="super-btn green-btn">I'm Ready!</button>
                     </div>
                     <p id="lobby-wait-msg" class="blink-text">Waiting for all players to be ready...</p>
@@ -380,10 +426,7 @@
                             <span class="lb-h-name">PLAYER</span>
                             <span class="lb-h-score">SHOTS</span>
                         </div>
-                        <div id="lb-list" class="leaderboard-list-premium">
-                            <p class="lb-loading">Searching for champions...</p>
-                            <!-- Populated by JS -->
-                        </div>
+                        <div id="lb-list" class="leaderboard-list-premium"></div>
                     </div>
                 </div>
             </div>
@@ -402,7 +445,7 @@
             <!-- LEVEL COMPLETE (Improved Design) -->
             <div id="level-complete" class="screen victory-overlay">
                 <div id="confetti-container" class="confetti-layer"></div>
-                
+
                 <div class="victory-card pop-in-bounce">
                     <div class="victory-header">
                         <h2 class="victory-title" id="lc-title">HOLE COMPLETE!</h2>
@@ -432,7 +475,6 @@
 
                     <div class="victory-actions">
                         <button id="btn-next-level" class="super-btn green-btn victory-btn">NEXT LEVEL</button>
-                        <button class="super-btn btn-nav victory-btn secondary" data-target="screen-levels">LEVEL SELECT</button>
                     </div>
                 </div>
             </div>
@@ -475,7 +517,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- REWARD MODAL POP-UP -->
             <div id="screen-reward-won" class="screen screen-overlay hidden">
                 <div class="panel reward-card pop-in-bounce">
@@ -494,7 +536,6 @@
     </div>
 
     <script>
-        // Fallback if config.js is missing in production/Vercel
         if (typeof window.PROJECT_CONFIG === 'undefined') {
             window.PROJECT_CONFIG = {
                 SUPABASE_URL: "",
@@ -502,7 +543,8 @@
             };
         }
     </script>
-    <script src="config.js" onerror="console.log('Using environment fallbacks')"></script>
+    <script src="/api/runtimeConfig.js" onerror="console.log('No runtime config API found')"></script>
+    <script src="config.js" onerror="console.log('No local config.js found')"></script>
     <script src="game.js"></script>
 </body>
 

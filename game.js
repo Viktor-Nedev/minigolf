@@ -93,14 +93,29 @@ let state = {
     levelStars: [], // [0]=3 stars, [1]=2 stars etc.
     missionStats: { holesPlayed: 0, sandHits: 0, levelsFinished: 0, totalStrokes: 0, starsEarned: 0 },
     myRole: 'p1',
+    myPresenceId: null,
+    joined: false,
+    isHost: false,
+    partyMode: 'create',
     playersReady: {},
+    roleByPresence: {},
     roomId: null,
+    partySettings: {
+        maxPlayers: 2,
+        totalRounds: 3,
+        mapIds: [0, 1, 2]
+    },
+    mapSelection: [0, 1, 2],
+    partySettingsReceived: false,
+    matchStarted: false,
     selectedColor: '#ffffff',
     selectedBallIdx: 0,
     activeMissions: [], // { id, type, goal, progress, target }
 
     game: {
         levelIdx: 0,
+        matchRoundIdx: 0,
+        matchLevelOrder: [],
         turnIdx: 0, // index in activePlayers
         activePlayers: ['p1'], // e.g. ['p1', 'p2']
         players: {
@@ -110,6 +125,7 @@ let state = {
             p4: { active: false, x: 0, y: 0, vx: 0, vy: 0, strokes: 0, color: '#ff3333', ballIdx: 0, state: 'idle' },
         },
         state: 'idle', // idle, moving, holed, water
+        roundFinished: false,
         waterTimer: 0
     },
 
@@ -129,8 +145,10 @@ function loadLocalData() {
             const data = JSON.parse(d);
             if (data.username) {
                 state.username = data.username;
-                const mi = document.getElementById('username-input');
-                if (mi) mi.value = state.username;
+                const createNameInput = document.getElementById('create-username-input');
+                if (createNameInput) createNameInput.value = state.username;
+                const joinNameInput = document.getElementById('join-username-input');
+                if (joinNameInput) joinNameInput.value = state.username;
                 const mn = document.getElementById('main-mini-name');
                 if (mn) mn.innerText = state.username;
                 const ma = document.getElementById('main-mini-avatar');
@@ -454,12 +472,14 @@ function initUI() {
     document.getElementById('btn-splash-play').addEventListener('click', () => showScreen('screen-main-menu'));
 
     // Sync Usernames
-    const mainNameInput = document.getElementById('username-input');
+    const createNameInput = document.getElementById('create-username-input');
+    const joinNameInput = document.getElementById('join-username-input');
     const profileNameInput = document.getElementById('p-username-input');
 
     const updateName = (val) => {
         state.username = val.trim() || 'Guest';
-        if (mainNameInput) mainNameInput.value = state.username;
+        if (createNameInput) createNameInput.value = state.username;
+        if (joinNameInput) joinNameInput.value = state.username;
         if (profileNameInput) profileNameInput.value = state.username;
 
         const av = document.getElementById('p-avatar-circle');
@@ -473,8 +493,10 @@ function initUI() {
         saveLocalData();
     };
 
-    if (mainNameInput) mainNameInput.addEventListener('input', (e) => updateName(e.target.value));
+    if (createNameInput) createNameInput.addEventListener('input', (e) => updateName(e.target.value));
+    if (joinNameInput) joinNameInput.addEventListener('input', (e) => updateName(e.target.value));
     if (profileNameInput) profileNameInput.addEventListener('input', (e) => updateName(e.target.value));
+    updateName(state.username);
 
     // Nav Bindings
     document.querySelectorAll('.btn-nav').forEach(btn => {
@@ -596,28 +618,42 @@ function initUI() {
     refreshBallsUI();
 
     // Multiplayer bindings
-    document.getElementById('btn-join-room').addEventListener('click', joinLobby);
+    document.getElementById('btn-open-create-party').addEventListener('click', () => setPartyMode('create'));
+    document.getElementById('btn-open-join-party').addEventListener('click', () => setPartyMode('join'));
+    document.getElementById('btn-create-party').addEventListener('click', createParty);
+    document.getElementById('btn-join-party').addEventListener('click', joinParty);
     document.getElementById('btn-ready').addEventListener('click', toggleReady);
 
-    // Auto-generate a room code when entering the multiplayer screen
-    document.querySelector('.btn-nav[data-target="screen-multiplayer"]').addEventListener('click', () => {
-        document.getElementById('room-input').value = generateRoomCode();
+    const roundsSelect = document.getElementById('create-rounds');
+    roundsSelect.addEventListener('change', () => {
+        const rounds = parseInt(roundsSelect.value, 10) || 3;
+        updateRoundTarget(rounds);
     });
+    updateRoundTarget(parseInt(roundsSelect.value, 10) || 3);
+    buildMapCatalog();
 
-    const ls = document.getElementById('lobby-level-select');
-    LEVELS.forEach((lvl, i) => {
-        const o = document.createElement('option'); o.value = i; o.innerText = `Lvl ${i + 1}: ${lvl.name}`;
-        ls.appendChild(o);
-    });
-    ls.addEventListener('change', (e) => {
-        if (state.myRole === 'p1') broadcastLobby({ type: 'level', val: e.target.value });
+    // Reset lobby UI each time we open the multiplayer screen
+    document.querySelector('.btn-nav[data-target="screen-multiplayer"]').addEventListener('click', () => {
+        resetMultiplayerUI();
+        setPartyMode('create');
+        if (!supabaseClient) setMultiplayerStatus('Supabase config missing. Add SUPABASE_URL/ANON_KEY.');
     });
 
     // In-game Pause/Restart
     document.getElementById('btn-pause').addEventListener('click', () => showScreen('screen-levels')); // back to levels
     document.getElementById('btn-next-level').addEventListener('click', () => {
         if (state.mode === 'multi' && state.myRole === 'p1') {
-            broadcastLobby({ type: 'start_level', val: state.game.levelIdx + 1 });
+            const nextRound = state.game.matchRoundIdx + 1;
+            if (nextRound < state.game.matchLevelOrder.length) {
+                broadcastLobby({
+                    type: 'start_round',
+                    roundIdx: nextRound,
+                    levelIdx: state.game.matchLevelOrder[nextRound],
+                    matchLevels: state.game.matchLevelOrder
+                });
+            } else {
+                broadcastLobby({ type: 'finish_match' });
+            }
         } else if (state.mode === 'solo') {
             startSoloGame(state.game.levelIdx + 1);
         }
@@ -637,7 +673,10 @@ function initUI() {
 function startSoloGame(lvlIdx) {
     if (lvlIdx >= LEVELS.length) { showScreen('game-over'); return; }
     state.mode = 'solo';
+    state.matchStarted = false;
     state.game.levelIdx = lvlIdx;
+    state.game.matchRoundIdx = 0;
+    state.game.matchLevelOrder = [];
     state.game.activePlayers = ['p1'];
 
     const p1 = state.game.players.p1;
@@ -647,6 +686,7 @@ function startSoloGame(lvlIdx) {
 
     state.game.turnIdx = 0;
     state.game.state = 'idle';
+    state.game.roundFinished = false;
     setupHUD();
     updateCamera();
     showScreen('hud');
@@ -660,132 +700,502 @@ function generateRoomCode() {
     return code;
 }
 
-function updateLobbyUI() {
-    const ap = state.game.activePlayers;
-    const allReady = ap.every(role => state.playersReady[role]);
-    const waitMsg = document.getElementById('lobby-wait-msg');
+function sanitizeRoomCode(rawCode) {
+    return (rawCode || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+}
 
-    if (ap.length === 1 && state.playersReady[state.myRole]) {
-        // Solo host: hide wait msg and let checkAllReady trigger start
-        if (waitMsg) waitMsg.classList.add('hidden');
-    } else if (ap.length > 1 && !allReady) {
-        // Multiple players: show wait msg if not all are ready
-        if (waitMsg) {
-            waitMsg.classList.remove('hidden');
-            waitMsg.innerText = "Waiting for other players to be ready...";
-        }
+function setMultiplayerStatus(text) {
+    const statusEl = document.getElementById('mp-status');
+    if (statusEl) statusEl.innerText = text;
+}
+
+function normalizePartySettings(rawSettings) {
+    const rawRounds = parseInt(rawSettings?.totalRounds, 10);
+    const totalRounds = [3, 6, 12].includes(rawRounds) ? rawRounds : 3;
+    const maxPlayers = Math.max(1, Math.min(4, parseInt(rawSettings?.maxPlayers, 10) || 2));
+
+    let mapIds = Array.isArray(rawSettings?.mapIds)
+        ? rawSettings.mapIds
+            .map(v => parseInt(v, 10))
+            .filter(v => Number.isInteger(v) && v >= 0 && v < LEVELS.length)
+        : [];
+
+    while (mapIds.length < totalRounds) mapIds.push(mapIds.length % LEVELS.length);
+    mapIds = mapIds.slice(0, totalRounds);
+
+    return { maxPlayers, totalRounds, mapIds };
+}
+
+function updateRoundTarget(rounds) {
+    const t = document.getElementById('map-select-target');
+    if (t) t.innerText = rounds;
+    state.partySettings.totalRounds = rounds;
+    trimSelectionToRound();
+    syncSelectionToSettings();
+    updatePartySummaryUI();
+    updateCatalogBadges();
+    if (state.isHost) broadcastLobby({ type: 'party_config', settings: state.partySettings });
+}
+
+function trimSelectionToRound() {
+    const target = state.partySettings.totalRounds;
+    state.mapSelection = state.mapSelection.slice(0, target);
+}
+
+function generateFallbackMaps(count) {
+    const maps = [];
+    let idx = 0;
+    while (maps.length < count) {
+        const candidate = idx % LEVELS.length;
+        if (!state.mapSelection.includes(candidate)) maps.push(candidate);
+        idx++;
+    }
+    return maps;
+}
+
+function syncSelectionToSettings() {
+    const target = state.partySettings.totalRounds;
+    const maps = state.mapSelection.slice(0, target);
+    if (maps.length < target) maps.push(...generateFallbackMaps(target - maps.length));
+    state.partySettings.mapIds = maps;
+}
+
+function buildMapCatalog() {
+    const grid = document.getElementById('create-map-catalog');
+    if (!grid) return;
+    grid.innerHTML = '';
+    LEVELS.forEach((lvl, idx) => {
+        const card = document.createElement('div');
+        card.className = 'map-card';
+        card.dataset.level = idx;
+        card.innerHTML = `
+            <div class="map-index">#${idx + 1}</div>
+            <span class="map-name">${lvl.name}</span>
+        `;
+        card.onclick = () => toggleMapSelection(idx);
+        grid.appendChild(card);
+    });
+    updateCatalogBadges();
+}
+
+function toggleMapSelection(idx) {
+    const target = state.partySettings.totalRounds;
+    const exists = state.mapSelection.indexOf(idx);
+    if (exists >= 0) {
+        state.mapSelection.splice(exists, 1);
     } else {
-        if (waitMsg) waitMsg.classList.add('hidden');
+        if (state.mapSelection.length >= target) return;
+        state.mapSelection.push(idx);
+    }
+    syncSelectionToSettings();
+    updateCatalogBadges();
+    updatePartySummaryUI();
+    if (state.isHost) broadcastLobby({ type: 'party_config', settings: state.partySettings });
+}
+
+function updateCatalogBadges() {
+    const grid = document.getElementById('create-map-catalog');
+    if (!grid) return;
+    const cards = grid.querySelectorAll('.map-card');
+    cards.forEach(c => {
+        c.classList.remove('selected');
+        const badge = c.querySelector('.map-badge');
+        if (badge) badge.remove();
+    });
+    state.mapSelection.forEach((lvlIdx, order) => {
+        const card = grid.querySelector(`.map-card[data-level="${lvlIdx}"]`);
+        if (!card) return;
+        card.classList.add('selected');
+        const b = document.createElement('div');
+        b.className = 'map-badge';
+        b.innerText = order + 1;
+        card.appendChild(b);
+    });
+    const countEl = document.getElementById('map-select-count');
+    if (countEl) countEl.innerText = state.mapSelection.length;
+}
+
+function updatePartySummaryUI() {
+    const settingsLine = document.getElementById('display-party-settings');
+    const mapsLine = document.getElementById('display-party-maps');
+    if (settingsLine) {
+        settingsLine.innerText = `Players: ${state.partySettings.maxPlayers} | Rounds: ${state.partySettings.totalRounds}`;
+    }
+    if (mapsLine) {
+        const label = state.partySettings.mapIds
+            .map((lvlIdx, i) => `R${i + 1}: ${lvlIdx + 1}`)
+            .join(', ');
+        mapsLine.innerText = `Maps: ${label}`;
     }
 }
 
-async function joinLobby() {
-    const name = document.getElementById('username-input').value.trim() || 'Guest';
-    const code = document.getElementById('room-input').value.trim() || 'party1';
-    state.username = name;
-    state.roomId = code;
+function applyPartySettings(rawSettings) {
+    state.partySettings = normalizePartySettings(rawSettings);
+    state.partySettingsReceived = true;
+    state.mapSelection = [...state.partySettings.mapIds];
 
-    if (!supabaseClient) { alert("Supabase config invalid"); return; }
+    const maxPlayersSelect = document.getElementById('create-max-players');
+    const roundsSelect = document.getElementById('create-rounds');
+    if (maxPlayersSelect) maxPlayersSelect.value = String(state.partySettings.maxPlayers);
+    if (roundsSelect) roundsSelect.value = String(state.partySettings.totalRounds);
+    updateRoundTarget(state.partySettings.totalRounds);
+    updateCatalogBadges();
+    syncSelectionToSettings();
+    updatePartySummaryUI();
+}
 
-    document.getElementById('mp-join-section').classList.add('hidden');
-    document.getElementById('mp-room-section').classList.remove('hidden');
-    document.getElementById('display-room-id').innerText = code;
-    document.getElementById('mp-status').innerText = "Connecting...";
+function resetLobbySlots() {
+    ['p1', 'p2', 'p3', 'p4'].forEach((role, idx) => {
+        const slot = document.getElementById(`slot-p${idx + 1}`);
+        if (!slot) return;
+        slot.className = 'player-slot';
+        slot.querySelector('.slot-name').innerText = 'Waiting...';
+        slot.querySelector('.status-badge').innerText = '';
+    });
+}
 
-    channel = supabaseClient.channel(code, {
-        config: { broadcast: { self: true }, presence: { key: Math.random().toString(36).substring(7) } }
+function setPartyMode(mode) {
+    state.partyMode = mode;
+    const createPanel = document.getElementById('mp-create-panel');
+    const joinPanel = document.getElementById('mp-join-panel');
+    const createBtn = document.getElementById('btn-open-create-party');
+    const joinBtn = document.getElementById('btn-open-join-party');
+    if (!createPanel || !joinPanel || !createBtn || !joinBtn) return;
+
+    const isCreate = mode === 'create';
+    createPanel.classList.toggle('hidden', !isCreate);
+    joinPanel.classList.toggle('hidden', isCreate);
+    createBtn.classList.toggle('active', isCreate);
+    joinBtn.classList.toggle('active', !isCreate);
+}
+
+function resetMultiplayerUI() {
+    const modeSection = document.getElementById('mp-mode-section');
+    const roomSection = document.getElementById('mp-room-section');
+    if (modeSection) modeSection.classList.remove('hidden');
+    if (roomSection) roomSection.classList.add('hidden');
+
+    const roomCode = document.getElementById('display-room-id');
+    if (roomCode) roomCode.innerText = '---';
+    setMultiplayerStatus(supabaseClient ? 'Ready to create or join.' : 'Supabase config missing. Add SUPABASE_URL/ANON_KEY.');
+    resetLobbySlots();
+    updatePartySummaryUI();
+    updateLobbyUI();
+    const joinRoomInput = document.getElementById('join-room-input');
+    if (joinRoomInput) joinRoomInput.value = '';
+}
+
+function updateReadyButtonUI() {
+    const btn = document.getElementById('btn-ready');
+    if (!btn) return;
+    const canToggle = state.joined && state.myRole && !state.matchStarted;
+    btn.disabled = !canToggle;
+    btn.innerText = state.playersReady[state.myRole] ? 'Not Ready' : "I'm Ready!";
+}
+
+function updateLobbyUI() {
+    updateReadyButtonUI();
+    const waitMsg = document.getElementById('lobby-wait-msg');
+    if (!waitMsg) return;
+
+    const joinedRoles = state.game.activePlayers || [];
+    if (!state.joined || joinedRoles.length === 0) {
+        waitMsg.classList.remove('hidden');
+        waitMsg.innerText = 'Waiting for players...';
+        return;
+    }
+
+    if (state.matchStarted) {
+        waitMsg.classList.add('hidden');
+        return;
+    }
+
+    const allReady = joinedRoles.every(role => state.playersReady[role]);
+    if (allReady) {
+        waitMsg.classList.remove('hidden');
+        waitMsg.innerText = state.isHost ? 'All players ready. Starting match...' : 'All players ready. Host is starting...';
+    } else {
+        waitMsg.classList.remove('hidden');
+        waitMsg.innerText = 'Waiting for all players to be ready...';
+    }
+}
+
+async function createParty() {
+    const nameInput = document.getElementById('create-username-input');
+    const maxPlayersSelect = document.getElementById('create-max-players');
+    const roundsSelect = document.getElementById('create-rounds');
+
+    const username = nameInput?.value.trim() || 'Guest';
+    const maxPlayers = Math.max(1, Math.min(4, parseInt(maxPlayersSelect?.value, 10) || 2));
+    const totalRoundsRaw = parseInt(roundsSelect?.value, 10);
+    const totalRounds = [3, 6, 12].includes(totalRoundsRaw) ? totalRoundsRaw : 3;
+    trimSelectionToRound();
+    const mapIds = state.mapSelection.length >= totalRounds
+        ? state.mapSelection.slice(0, totalRounds)
+        : state.mapSelection.concat(generateFallbackMaps(totalRounds - state.mapSelection.length));
+
+    state.username = username;
+    applyPartySettings({ maxPlayers, totalRounds, mapIds });
+    await joinLobby(generateRoomCode(), true);
+}
+
+async function joinParty() {
+    const nameInput = document.getElementById('join-username-input');
+    const roomInput = document.getElementById('join-room-input');
+    const username = nameInput?.value.trim() || 'Guest';
+    const roomCode = sanitizeRoomCode(roomInput?.value || '');
+
+    if (roomCode.length < 4) {
+        setMultiplayerStatus('Please enter a valid 4-6 character party code.');
+        return;
+    }
+
+    if (roomInput) roomInput.value = roomCode;
+    state.username = username;
+    await joinLobby(roomCode, false);
+}
+
+async function joinLobby(roomCode, asHost) {
+    if (!supabaseClient) {
+        setMultiplayerStatus('Supabase config missing. Set SUPABASE_URL and SUPABASE_ANON_KEY (env or config.js).');
+        return;
+    }
+
+    if (channel && supabaseClient) {
+        supabaseClient.removeChannel(channel);
+        channel = null;
+    }
+
+    state.mode = 'multi';
+    state.roomId = roomCode;
+    state.isHost = asHost;
+    state.joined = false;
+    state.matchStarted = false;
+    state.playersReady = {};
+    state.roleByPresence = {};
+    state.myRole = 'p1';
+    state.myPresenceId = Math.random().toString(36).slice(2, 10);
+    state.partySettingsReceived = asHost;
+
+    const modeSection = document.getElementById('mp-mode-section');
+    const roomSection = document.getElementById('mp-room-section');
+    if (modeSection) modeSection.classList.add('hidden');
+    if (roomSection) roomSection.classList.remove('hidden');
+    document.getElementById('display-room-id').innerText = roomCode;
+    resetLobbySlots();
+    updatePartySummaryUI();
+    setMultiplayerStatus('Connecting...');
+
+    const channelName = `party:${roomCode}`;
+    channel = supabaseClient.channel(channelName, {
+        config: { broadcast: { self: true }, presence: { key: state.myPresenceId } }
     });
 
     channel
-        .on('presence', { event: 'sync' }, () => {
-            const pres = channel.presenceState();
-            let arr = [];
-            // presenceState returns an object where keys are the presence keys we set (random strings)
-            for (let k in pres) {
-                if (pres[k][0]) arr.push({ key: k, joinedAt: pres[k][0].joinedAt, ballColor: pres[k][0].ballColor, uName: pres[k][0].uName || 'Guest' });
-            }
-            arr = arr.sort((a, b) => a.joinedAt - b.joinedAt); // Sort by join time
-
-            // Assign roles 1-4 based on order
-            state.game.activePlayers = [];
-            document.querySelectorAll('.player-slot').forEach(el => {
-                el.className = 'player-slot';
-                el.querySelector('.slot-name').innerText = 'Empty';
-                el.querySelector('.status-badge').innerText = '';
-            });
-
-            arr.forEach((p, idx) => {
-                if (idx > 3) return; // Only 4 players max
-                const role = `p${idx + 1}`;
-                state.game.activePlayers.push(role);
-                state.game.players[role].active = true;
-                state.game.players[role].color = p.ballColor || P_COLORS[role];
-                state.game.players[role].name = p.uName;
-
-                if (p.key === state.myPresenceId) state.myRole = role;
-
-                const slot = document.getElementById(`slot-p${idx + 1}`);
-                if (slot) {
-                    slot.classList.add('filled');
-                    slot.querySelector('.slot-name').innerText = p.uName + (state.myRole === role ? " (YOU)" : "");
-                    if (state.playersReady[role]) {
-                        slot.classList.add('ready');
-                        slot.querySelector('.status-badge').innerText = 'READY';
-                    } else {
-                        slot.classList.remove('ready');
-                        slot.querySelector('.status-badge').innerText = '';
-                    }
-                }
-            });
-
-            updateLobbyUI();
-            document.getElementById('mp-status').innerText = `You are ${state.myRole?.toUpperCase() || 'Spectating'}`;
-            if (state.myRole !== 'p1') document.getElementById('lobby-level-select').disabled = true;
-        })
-        .on('broadcast', { event: 'lobby' }, ({ payload }) => {
-            if (payload.type === 'ready') {
-                state.playersReady[payload.role] = payload.val;
-                const slot = document.getElementById(`slot-${payload.role}`);
-                if (slot) {
-                    if (payload.val) { slot.classList.add('ready'); slot.querySelector('.status-badge').innerText = 'READY'; }
-                    else { slot.classList.remove('ready'); slot.querySelector('.status-badge').innerText = ''; }
-                }
-                updateLobbyUI();
-                checkAllReady();
-            } else if (payload.type === 'level') {
-                document.getElementById('lobby-level-select').value = payload.val;
-                state.game.levelIdx = parseInt(payload.val);
-            } else if (payload.type === 'start_level') {
-                startMultiGame(payload.val);
-            }
-        })
-        .on('broadcast', { event: 'game' }, ({ payload }) => {
-            handleMultiGameEvent(payload);
-        })
+        .on('presence', { event: 'sync' }, handlePresenceSync)
+        .on('broadcast', { event: 'lobby' }, ({ payload }) => handleLobbyEvent(payload))
+        .on('broadcast', { event: 'game' }, ({ payload }) => handleMultiGameEvent(payload))
         .subscribe(async (status) => {
             if (status === 'SUBSCRIBED') {
-                state.myPresenceId = Math.random().toString(36).substring(7);
                 await channel.track({
                     joinedAt: Date.now(),
-                    ballColor: state.game.players['p1'].color,
+                    ballColor: state.selectedColor || state.game.players.p1.color,
                     uName: state.username
                 });
+                state.joined = true;
+                setMultiplayerStatus(asHost ? `Party created. Share code: ${roomCode}` : `Joined party: ${roomCode}`);
+                updateLobbyUI();
+
+                if (asHost) {
+                    broadcastLobby({ type: 'party_config', settings: state.partySettings });
+                } else {
+                    broadcastLobby({ type: 'config_request' });
+                    setTimeout(() => {
+                        if (state.joined && !state.partySettingsReceived && !state.isHost) {
+                            setMultiplayerStatus('Party not found or host is offline.');
+                            leaveLobby();
+                        }
+                    }, 4000);
+                }
+            }
+            if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+                setMultiplayerStatus('Connection issue. Try again.');
+                leaveLobby();
             }
         });
 }
 
+function handlePresenceSync(shouldBroadcastConfig = true) {
+    if (typeof shouldBroadcastConfig !== 'boolean') shouldBroadcastConfig = true;
+    if (!channel) return;
+
+    const pres = channel.presenceState();
+    let players = [];
+    for (let key in pres) {
+        const p = pres[key]?.[0];
+        if (p) {
+            players.push({
+                key,
+                joinedAt: p.joinedAt || 0,
+                ballColor: p.ballColor,
+                uName: p.uName || 'Guest'
+            });
+        }
+    }
+    players = players.sort((a, b) => a.joinedAt - b.joinedAt).slice(0, 4);
+
+    const prevRoleMap = { ...state.roleByPresence };
+    const newRoleMap = {};
+    players.forEach((p, idx) => {
+        newRoleMap[`p${idx + 1}`] = p.key;
+    });
+    state.roleByPresence = newRoleMap;
+
+    const newReadyMap = {};
+    Object.keys(newRoleMap).forEach(role => {
+        newReadyMap[role] = prevRoleMap[role] === newRoleMap[role] ? !!state.playersReady[role] : false;
+    });
+    state.playersReady = newReadyMap;
+
+    if (players.length === 0) {
+        setMultiplayerStatus('Connecting...');
+        return;
+    }
+
+    const mine = players.findIndex(p => p.key === state.myPresenceId);
+    const maxAllowed = state.partySettingsReceived ? state.partySettings.maxPlayers : 4;
+    if (mine === -1) {
+        if (players.length >= maxAllowed) {
+            setMultiplayerStatus(`Party is full (limit ${maxAllowed}).`);
+            leaveLobby();
+        }
+        return;
+    }
+    state.myRole = `p${mine + 1}`;
+    state.isHost = state.myRole === 'p1';
+
+    const mySlot = parseInt(state.myRole.slice(1), 10);
+    if (mySlot > maxAllowed) {
+        setMultiplayerStatus(`Party full. Host set ${maxAllowed} player(s).`);
+        leaveLobby();
+        return;
+    }
+
+    state.game.activePlayers = [];
+    resetLobbySlots();
+
+    players.forEach((p, idx) => {
+        const role = `p${idx + 1}`;
+        const slot = document.getElementById(`slot-p${idx + 1}`);
+        const isInsideParty = idx < maxAllowed;
+
+        if (!isInsideParty) {
+            if (slot) slot.querySelector('.slot-name').innerText = 'Locked';
+            return;
+        }
+
+        state.game.activePlayers.push(role);
+        state.game.players[role].active = true;
+        state.game.players[role].color = p.ballColor || P_COLORS[role];
+        state.game.players[role].name = p.uName;
+
+        if (slot) {
+            slot.classList.add('filled');
+            slot.querySelector('.slot-name').innerText = p.uName + (role === state.myRole ? ' (YOU)' : '');
+            if (state.playersReady[role]) {
+                slot.classList.add('ready');
+                slot.querySelector('.status-badge').innerText = 'READY';
+            } else {
+                slot.classList.remove('ready');
+                slot.querySelector('.status-badge').innerText = '';
+            }
+        }
+    });
+
+    updatePartySummaryUI();
+    setMultiplayerStatus(`You are ${state.myRole.toUpperCase()} ${state.isHost ? '(HOST)' : ''}`);
+
+    if (state.isHost && shouldBroadcastConfig) {
+        state.partySettingsReceived = true;
+        broadcastLobby({ type: 'party_config', settings: state.partySettings });
+    }
+
+    updateLobbyUI();
+    checkAllReady();
+}
+
+function handleLobbyEvent(payload) {
+    if (!payload) return;
+    if (payload.target && payload.target !== state.myPresenceId) return;
+
+    if (payload.type === 'ready') {
+        state.playersReady[payload.role] = !!payload.val;
+        const slot = document.getElementById(`slot-${payload.role}`);
+        if (slot) {
+            if (payload.val) {
+                slot.classList.add('ready');
+                slot.querySelector('.status-badge').innerText = 'READY';
+            } else {
+                slot.classList.remove('ready');
+                slot.querySelector('.status-badge').innerText = '';
+            }
+        }
+        updateLobbyUI();
+        checkAllReady();
+        return;
+    }
+
+    if (payload.type === 'party_config' && payload.settings) {
+        applyPartySettings(payload.settings);
+        handlePresenceSync(false);
+        updateLobbyUI();
+        return;
+    }
+
+    if (payload.type === 'config_request' && state.isHost) {
+        broadcastLobby({ type: 'party_config', settings: state.partySettings });
+        return;
+    }
+
+    if (payload.type === 'start_round') {
+        startMultiGame(payload.levelIdx, payload.roundIdx, payload.matchLevels);
+        return;
+    }
+
+    if (payload.type === 'finish_match') {
+        showMultiplayerMatchResult();
+    }
+}
+
 function leaveLobby() {
-    if (channel) { supabaseClient.removeChannel(channel); channel = null; }
-    state.joined = false; state.myRole = 'p1';
-    document.getElementById('mp-join-section').classList.remove('hidden');
-    document.getElementById('mp-room-section').classList.add('hidden');
+    if (channel && supabaseClient) {
+        supabaseClient.removeChannel(channel);
+        channel = null;
+    }
+
+    state.joined = false;
+    state.isHost = false;
+    state.myRole = 'p1';
+    state.myPresenceId = null;
+    state.playersReady = {};
+    state.roleByPresence = {};
+    state.roomId = null;
+    state.partySettingsReceived = false;
+    state.matchStarted = false;
+    state.game.activePlayers = ['p1'];
+    state.game.matchRoundIdx = 0;
+    state.game.matchLevelOrder = [];
+
+    resetMultiplayerUI();
 }
 
 function toggleReady() {
-    if (!state.joined) return;
-    const isR = !state.playersReady[state.myRole];
-    state.playersReady[state.myRole] = isR;
-    broadcastLobby({ type: 'ready', role: state.myRole, val: isR });
+    if (!state.joined || !state.myRole || state.matchStarted) return;
+    const isReady = !state.playersReady[state.myRole];
+    state.playersReady[state.myRole] = isReady;
+    broadcastLobby({ type: 'ready', role: state.myRole, val: isReady });
+    updateLobbyUI();
+    checkAllReady();
 }
 
 function broadcastLobby(payload) {
@@ -793,60 +1203,118 @@ function broadcastLobby(payload) {
 }
 
 function checkAllReady() {
-    if (state.myRole !== 'p1') return; // Only host (P1) starts
-
-    const joinedRoles = state.game.activePlayers;
+    if (!state.joined || !state.isHost || state.matchStarted) return;
+    const joinedRoles = state.game.activePlayers || [];
     if (joinedRoles.length === 0) return;
 
-    let everyoneReady = true;
-    joinedRoles.forEach(role => {
-        if (!state.playersReady[role]) everyoneReady = false;
-    });
+    const everyoneReady = joinedRoles.every(role => state.playersReady[role]);
+    if (!everyoneReady) return;
 
-    if (everyoneReady) {
-        const lvl = parseInt(document.getElementById('lobby-level-select').value) || 0;
-        broadcastLobby({ type: 'start_level', val: lvl });
-    }
+    syncSelectionToSettings();
+    state.matchStarted = true;
+    const matchLevels = state.partySettings.mapIds.slice(0, state.partySettings.totalRounds);
+    broadcastLobby({ type: 'start_round', roundIdx: 0, levelIdx: matchLevels[0], matchLevels });
 }
 
-function startMultiGame(lvlIdx) {
-    state.mode = 'multi';
-    state.game.levelIdx = lvlIdx;
+function startMultiGame(lvlIdx, roundIdx = 0, matchLevels = null) {
+    const levelIdx = parseInt(lvlIdx, 10);
+    if (!Number.isInteger(levelIdx) || levelIdx < 0 || levelIdx >= LEVELS.length) return;
 
-    // Position players around start
-    const start = LEVELS[lvlIdx].startInfo;
+    const normalizedMatchLevels = Array.isArray(matchLevels)
+        ? matchLevels
+            .map(v => parseInt(v, 10))
+            .filter(v => Number.isInteger(v) && v >= 0 && v < LEVELS.length)
+        : state.game.matchLevelOrder;
+
+    state.mode = 'multi';
+    state.matchStarted = true;
+    state.game.levelIdx = levelIdx;
+    state.game.matchRoundIdx = Math.max(0, parseInt(roundIdx, 10) || 0);
+    state.game.matchLevelOrder = normalizedMatchLevels.length > 0 ? normalizedMatchLevels : [levelIdx];
+
+    const start = LEVELS[levelIdx].startInfo;
     const offsets = [{ x: -20, y: 0 }, { x: 20, y: 0 }, { x: 0, y: -20 }, { x: 0, y: 20 }];
 
-    state.game.activePlayers.forEach((r, i) => {
-        const p = state.game.players[r];
-        p.x = start.x + offsets[i].x; p.y = start.y + offsets[i].y;
-        p.strokes = 0; p.state = 'idle'; p.vx = 0; p.vy = 0;
+    state.game.activePlayers.forEach((role, i) => {
+        const p = state.game.players[role];
+        if (state.game.matchRoundIdx === 0) p.totalStrokes = 0;
+        p.x = start.x + offsets[i].x;
+        p.y = start.y + offsets[i].y;
+        p.strokes = 0;
+        p.state = 'idle';
+        p.vx = 0;
+        p.vy = 0;
     });
 
     state.game.turnIdx = 0;
     state.game.state = 'idle';
+    state.game.roundFinished = false;
     setupHUD();
     updateCamera();
     showScreen('hud');
     toastAnnounceTurn();
 }
 
+function showMultiplayerMatchResult() {
+    const rows = state.game.activePlayers
+        .map(role => ({
+            role,
+            name: state.game.players[role].name || role.toUpperCase(),
+            score: state.game.players[role].totalStrokes || 0
+        }))
+        .sort((a, b) => a.score - b.score);
+
+    const winner = rows[0];
+    const winnerText = winner ? `${winner.name.toUpperCase()} WINS!` : 'MATCH FINISHED';
+    const winnerEl = document.getElementById('winner-announcement');
+    if (winnerEl) winnerEl.innerText = winnerText;
+
+    const sb = document.getElementById('go-scoreboard');
+    if (sb) {
+        sb.innerHTML = '';
+        rows.forEach((row, idx) => {
+            const line = document.createElement('div');
+            line.className = 'sb-row';
+            line.innerHTML = `<span>#${idx + 1} ${row.name}</span><span>${row.score}</span>`;
+            sb.appendChild(line);
+        });
+    }
+
+    showScreen('game-over');
+}
+
 function handleMultiGameEvent(payload) {
+    if (!payload) return;
+
     if (payload.action === 'shot') {
         const p = state.game.players[payload.role];
-        p.vx = payload.vx; p.vy = payload.vy; p.strokes = payload.strokes; p.state = 'moving';
+        if (!p) return;
+        p.vx = payload.vx;
+        p.vy = payload.vy;
+        p.strokes = payload.strokes;
+        p.state = 'moving';
         state.game.turnIdx = payload.turnIdx;
         refreshHUD();
     } else if (payload.action === 'pos') {
         const p = state.game.players[payload.role];
-        p.x = payload.x; p.y = payload.y; p.vx = 0; p.vy = 0; p.state = payload.state;
+        if (!p) return;
+        p.x = payload.x;
+        p.y = payload.y;
+        p.vx = 0;
+        p.vy = 0;
+        p.state = payload.state;
         state.game.turnIdx = payload.turnIdx;
         refreshHUD();
         checkLevelEnd();
     } else if (payload.action === 'water') {
         const p = state.game.players[payload.role];
-        p.x = payload.x; p.y = payload.y; p.strokes = payload.strokes; p.state = 'idle';
-        p.vx = 0; p.vy = 0;
+        if (!p) return;
+        p.x = payload.x;
+        p.y = payload.y;
+        p.strokes = payload.strokes;
+        p.state = 'idle';
+        p.vx = 0;
+        p.vy = 0;
         state.game.turnIdx = payload.turnIdx;
         refreshHUD();
     }
@@ -881,13 +1349,15 @@ function refreshHUD() {
         if (box) {
             if (activePlayerKey() === r) box.classList.add('active-turn');
             else box.classList.remove('active-turn');
+            box.style.color = '#000';
+            box.querySelector('.p-name')?.style.setProperty('color', '#000');
         }
     });
 }
 
 function activePlayerKey() {
     if (state.mode === 'solo') return 'p1';
-    return state.game.activePlayers[state.game.turnIdx];
+    return state.game.activePlayers[state.game.turnIdx] || 'p1';
 }
 
 function toastAnnounceTurn() {
@@ -919,10 +1389,21 @@ function advanceTurn() {
 }
 
 function checkLevelEnd() {
+    if (state.game.roundFinished) return;
+
     let allHoled = true;
     state.game.activePlayers.forEach(r => { if (state.game.players[r].state !== 'holed') allHoled = false; });
 
     if (allHoled) {
+        state.game.roundFinished = true;
+
+        if (state.mode === 'multi') {
+            state.game.activePlayers.forEach(role => {
+                const p = state.game.players[role];
+                p.totalStrokes = (p.totalStrokes || 0) + p.strokes;
+            });
+        }
+
         // Reward 25 Points for finishing
         state.points += 25;
         refreshPointsDisplay();
@@ -930,7 +1411,7 @@ function checkLevelEnd() {
 
         setTimeout(() => {
             showLevelComplete();
-            saveScoreToSupabase(); // Save local player score
+            if (state.mode === 'solo') saveScoreToSupabase();
         }, 1000);
     }
 }
@@ -989,13 +1470,16 @@ function showLevelComplete() {
     const parEl = document.getElementById('lc-par');
     const currentPar = LEVELS[state.game.levelIdx].par;
     if (parEl) parEl.innerText = currentPar;
+    const starsCont = document.getElementById('lc-stars-container');
+    if (state.mode === 'multi' && starsCont) starsCont.innerHTML = '';
 
     if (state.mode === 'multi') {
         state.game.activePlayers.forEach(r => {
             const p = state.game.players[r];
             const row = document.createElement('div');
             row.className = 'sb-row';
-            row.innerHTML = `<span style="color:${P_COLORS[r]}">${r.toUpperCase()}</span><span>${p.strokes}</span>`;
+            const displayName = (p.name || r).toUpperCase();
+            row.innerHTML = `<span style="color:#000">${displayName}</span><span style="color:#000">${p.strokes} (TOTAL ${p.totalStrokes || p.strokes})</span>`;
             if (sb) sb.appendChild(row);
         });
     }
@@ -1020,7 +1504,6 @@ function showLevelComplete() {
         saveLocalData();
 
         // UI Animated Stars Pop-in (Centered)
-        const starsCont = document.getElementById('lc-stars-container');
         if (starsCont) {
             starsCont.innerHTML = '';
             for (let i = 1; i <= earned; i++) {
@@ -1033,14 +1516,24 @@ function showLevelComplete() {
         }
 
         const nextBtn = document.getElementById('btn-next-level');
-        if (nextBtn) nextBtn.style.display = 'block';
+        if (nextBtn) {
+            nextBtn.style.display = 'block';
+            nextBtn.innerText = 'NEXT LEVEL';
+        }
     } else {
         const nextBtn = document.getElementById('btn-next-level');
-        if (nextBtn) nextBtn.style.display = state.myRole === 'p1' ? 'block' : 'none';
+        if (nextBtn) {
+            const isLastRound = state.game.matchRoundIdx >= (state.game.matchLevelOrder.length - 1);
+            nextBtn.style.display = state.myRole === 'p1' ? 'block' : 'none';
+            nextBtn.innerText = isLastRound ? 'SHOW WINNER' : `NEXT ROUND (${state.game.matchRoundIdx + 2}/${state.game.matchLevelOrder.length})`;
+        }
     }
 
     const title = document.getElementById('lc-title');
-    if (title) title.innerText = "HOLE COMPLETE";
+    if (title) {
+        if (state.mode === 'multi') title.innerText = `ROUND ${state.game.matchRoundIdx + 1} COMPLETE`;
+        else title.innerText = "HOLE COMPLETE";
+    }
     showScreen('level-complete');
     triggerConfetti();
 }
