@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Classic Mini Golf Supabase Multiplayer</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+    <title>Crazy Mini Golf!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     
     <!-- Supabase SDK (Realtime focus) -->
@@ -12,74 +12,285 @@
 </head>
 <body>
     <div id="game-container">
+        <!-- Background Canvas -->
         <canvas id="game-canvas"></canvas>
 
+        <!-- UI Animations Background Elements -->
+        <div id="ui-bg-effects"></div>
+
+        <!-- UI Layer -->
         <div id="ui-layer">
-            <!-- Main Menu -->
-            <div id="main-menu" class="screen active">
-                <div class="glass-panel">
-                    <h1 class="glow-text">MINI GOLF</h1>
-                    <p class="subtitle">Supabase Realtime Multiplayer</p>
+            
+            <!-- 1. SPLASH SCREEN -->
+            <div id="screen-splash" class="screen active">
+                <div class="logo-container bounce-anim">
+                    <h1 class="game-title">CRAZY<br>GOLF!</h1>
+                </div>
+                <button id="btn-splash-play" class="super-btn pulse-anim">TAP TO PLAY</button>
+            </div>
+
+            <!-- 2. MAIN MENU -->
+            <div id="screen-main-menu" class="screen">
+                <div class="top-bar">
+                    <div class="player-mini-profile btn-nav" data-target="screen-profile">
+                        <div class="avatar-circle"></div>
+                        <span>Guest</span>
+                    </div>
+                    <button class="icon-btn btn-nav" data-target="screen-settings">⚙️</button>
+                </div>
+                
+                <div class="main-menu-grid">
+                    <button class="menu-card btn-nav delay-1" data-target="screen-levels" style="--card-color: #4CAF50;">
+                        <span class="card-icon">⛳</span>
+                        <span class="card-title">SINGLE PLAYER</span>
+                    </button>
+                    <button class="menu-card btn-nav delay-2" data-target="screen-multiplayer" style="--card-color: #2196F3;">
+                        <span class="card-icon">🌍</span>
+                        <span class="card-title">MULTIPLAYER</span>
+                    </button>
+                    <button class="menu-card btn-nav delay-3" data-target="screen-balls" style="--card-color: #FFC107;">
+                        <span class="card-icon">⚽</span>
+                        <span class="card-title">BALLS</span>
+                    </button>
+                    <button class="menu-card btn-nav delay-4" data-target="screen-missions" style="--card-color: #9C27B0;">
+                        <span class="card-icon">📜</span>
+                        <span class="card-title">MISSIONS</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3. LEVEL SELECTION -->
+            <div id="screen-levels" class="screen">
+                <button class="back-btn btn-nav" data-target="screen-main-menu">↩ BACK</button>
+                <h2 class="page-title">CHOOSE LEVEL</h2>
+                <div class="level-grid" id="level-grid">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- 4. MISSIONS -->
+            <div id="screen-missions" class="screen">
+                <button class="back-btn btn-nav" data-target="screen-main-menu">↩ BACK</button>
+                <h2 class="page-title">CHALLENGES</h2>
+                <div class="missions-grid-container">
+                    <!-- Column 1 -->
+                    <div class="mission-column">
+                        <div class="mission-card" id="mission-1">
+                            <div class="mission-info">
+                                <h3>First Flight</h3>
+                                <p>Shoot your first ball</p>
+                                <div class="progress-bar"><div class="fill" style="width: 100%;"></div></div>
+                            </div>
+                            <div class="mission-reward">🎁 50 Coins</div>
+                        </div>
+                        <div class="mission-card" id="mission-2">
+                            <div class="mission-info">
+                                <h3>Hole in One</h3>
+                                <p>Get a hole-in-one</p>
+                                <div class="progress-bar"><div class="fill" style="width: 0%;"></div></div>
+                            </div>
+                            <div class="mission-reward">⚽ Bouncy Ball</div>
+                        </div>
+                    </div>
+                    <!-- Column 2 -->
+                    <div class="mission-column">
+                        <div class="mission-card" id="mission-3">
+                            <div class="mission-info">
+                                <h3>King of Sand</h3>
+                                <p>Hit 5 sand traps</p>
+                                <div class="progress-bar"><div class="fill" style="width: 20%;"></div></div>
+                            </div>
+                            <div class="mission-reward">⚽ Heavy Rock</div>
+                        </div>
+                        <div class="mission-card" id="mission-4">
+                            <div class="mission-info">
+                                <h3>Win it All</h3>
+                                <p>Finish 10 levels</p>
+                                <div class="progress-bar"><div class="fill" style="width: 10%;"></div></div>
+                            </div>
+                            <div class="mission-reward">⚽ Neon Ball</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. SELECT BALL -->
+            <div id="screen-balls" class="screen">
+                <button class="back-btn btn-nav" data-target="screen-main-menu">↩ BACK</button>
+                <h2 class="page-title">YOUR GEAR</h2>
+                <div class="ball-showcase">
+                    <div id="ball-display-large" class="ball-large pulse-anim"></div>
+                    <h3 id="ball-name-display">Standard Golf</h3>
+                    <div class="stats-bars">
+                        <div class="stat-row"><span>Bounce</span><div class="bar"><div id="bar-bounce" class="fill"></div></div></div>
+                        <div class="stat-row"><span>Friction</span><div class="bar"><div id="bar-friction" class="fill"></div></div></div>
+                        <div class="stat-row"><span>Weight</span><div class="bar"><div id="bar-weight" class="fill"></div></div></div>
+                    </div>
+                </div>
+                <div class="ball-inventory" id="ball-inventory">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- 6. MULTIPLAYER LOBBY -->
+            <div id="screen-multiplayer" class="screen">
+                <button class="back-btn btn-nav" data-target="screen-main-menu" id="btn-leave-lobby">↩ BACK</button>
+                <h2 class="page-title">MULTIPLAYER CAFE</h2>
+                
+                <div id="mp-join-section" class="panel slide-up">
+                    <p>Enter a room code to join or create a new group!</p>
+                    <input type="text" id="room-input" placeholder="Room Code (e.g. party1)" class="fun-input">
+                    <button id="btn-join-room" class="super-btn small-btn">JOIN / CREATE</button>
+                    <p id="mp-status" class="status-msg">Disconnected.</p>
+                </div>
+
+                <div id="mp-room-section" class="panel hidden">
+                    <h3>Room: <span id="display-room-id" style="color:#FFC107">---</span></h3>
                     
-                    <div id="lobby-section">
-                        <input type="text" id="room-id" value="global-room" placeholder="Enter Room ID" class="input-field">
-                        <div class="menu-buttons">
-                            <button id="btn-create-game" class="primary-btn">JOIN ROOM</button>
+                    <div class="players-slots">
+                        <!-- Up to 4 players -->
+                        <div class="player-slot" id="slot-p1">
+                            <div class="slot-avatar">P1</div>
+                            <span class="slot-name">Waiting...</span>
+                            <span class="status-badge"></span>
+                        </div>
+                        <div class="player-slot" id="slot-p2">
+                            <div class="slot-avatar">P2</div>
+                            <span class="slot-name">Waiting...</span>
+                            <span class="status-badge"></span>
+                        </div>
+                        <div class="player-slot" id="slot-p3">
+                            <div class="slot-avatar">P3</div>
+                            <span class="slot-name">Waiting...</span>
+                            <span class="status-badge"></span>
+                        </div>
+                        <div class="player-slot" id="slot-p4">
+                            <div class="slot-avatar">P4</div>
+                            <span class="slot-name">Waiting...</span>
+                            <span class="status-badge"></span>
                         </div>
                     </div>
 
-                    <div class="ball-selector-container">
-                        <h3>Select Your Ball</h3>
-                        <div class="ball-options" id="ball-options">
-                            <!-- Populated by JS -->
+                    <div class="lobby-controls">
+                        <div class="level-picker">
+                            <span>Level:</span>
+                            <select id="lobby-level-select" class="fun-select">
+                                <!-- Populated by JS -->
+                            </select>
                         </div>
+                        <button id="btn-ready" class="super-btn green-btn">I'm Ready!</button>
                     </div>
-
-                    <p id="connection-status" class="status-text">Disconnected (Supabase)</p>
+                    <p id="lobby-wait-msg" class="blink-text">Waiting for all players to be ready...</p>
                 </div>
             </div>
 
-            <!-- In Game HUD -->
+            <!-- 7. SETTINGS & HOW TO PLAY -->
+            <div id="screen-settings" class="screen">
+                <button class="back-btn btn-nav" data-target="screen-main-menu">↩ BACK</button>
+                
+                <div class="panel bounce-in">
+                    <button class="super-btn blue-btn btn-nav" data-target="screen-how-to-play" style="width: 100%; margin-bottom: 20px; font-size:1.5rem;">❓ HOW TO PLAY</button>
+                    
+                    <h2 class="page-title" style="font-size: 2rem;">SETTINGS</h2>
+                    <div class="setting-row">
+                        <span>🔊 Master Volume</span>
+                        <input type="range" class="fun-slider" min="0" max="100" value="80">
+                    </div>
+                    <div class="setting-row">
+                        <span>🎵 Music</span>
+                        <input type="range" class="fun-slider" min="0" max="100" value="50">
+                    </div>
+                    
+                    <div class="controls-cheat-sheet">
+                        <h3>Game Controls</h3>
+                        <div class="control-item"><span class="key">🖱️ Click & Drag</span> <span>Aim and set power</span></div>
+                        <div class="control-item"><span class="key">👆 Release</span> <span>Shoot the ball</span></div>
+                        <div class="control-item"><span class="key">❌ Esc</span> <span>Pause game</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 8. HOW TO PLAY (Sub-screen) -->
+            <div id="screen-how-to-play" class="screen floating-layer">
+                <div class="panel big-panel">
+                    <h2 class="page-title">HOW TO PLAY</h2>
+                    
+                    <div class="instruction-steps">
+                        <div class="step-card">
+                            <div class="step-img">👆</div>
+                            <p><strong>1. Touch & Drag</strong><br>Anywhere on screen to aim.</p>
+                        </div>
+                        <div class="step-card">
+                            <div class="step-img">📏</div>
+                            <p><strong>2. Pull Back</strong><br>To increase shot power!</p>
+                        </div>
+                        <div class="step-card">
+                            <div class="step-img">⛳</div>
+                            <p><strong>3. Release</strong><br>To smash the ball into the hole.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="hazard-legend">
+                        <div><span style="color:#e4cd85;">🟨 Sand:</span> Slows you down!</div>
+                        <div><span style="color:#3ca1df;">🟦 Water:</span> +1 stroke penalty!</div>
+                    </div>
+
+                    <button class="super-btn btn-nav" data-target="screen-settings" style="margin-top:20px;">GOT IT!</button>
+                </div>
+            </div>
+
+            <!-- 9. PROFILE -->
+            <div id="screen-profile" class="screen">
+                <button class="back-btn btn-nav" data-target="screen-main-menu">↩ BACK</button>
+                <div class="panel profile-panel slide-up">
+                    <div class="profile-header">
+                        <div class="large-avatar">👤</div>
+                        <h2>Guest Player</h2>
+                        <p>Beginner Golfer</p>
+                    </div>
+                    <div class="profile-stats">
+                        <div class="stat-box"><span>Holes Played</span><strong>12</strong></div>
+                        <div class="stat-box"><span>Total Strokes</span><strong>45</strong></div>
+                        <div class="stat-box"><span>Balls Unlocked</span><strong>4/5</strong></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- IN-GAME HUD -->
             <div id="hud" class="screen">
-                <div class="hud-top glass-panel-small">
-                    <div class="hud-item">
-                        <span class="label">P1 (YOU)</span>
-                        <span class="value" id="hud-p1-strokes">0</span>
-                    </div>
-                    <div class="hud-item">
-                        <span class="label">P2 (OPPONENT)</span>
-                        <span class="value" id="hud-p2-strokes">0</span>
-                    </div>
-                    <div class="hud-item highlight-turn" id="turn-indicator">
-                        <span class="label">TURN</span>
-                        <span class="value" id="hud-turn-name">WAITING...</span>
-                    </div>
+                <button id="btn-pause" class="icon-btn float-tl">⏸</button>
+                <div class="hud-multi-container" id="hud-multi-scores">
+                    <!-- Populated dynamically based on 1 to 4 players -->
                 </div>
-                <div class="hud-level-info">LEVEL <span id="hud-level-num">1</span></div>
-                <button id="btn-restart" class="secondary-btn icon-btn" title="Restart Level">↻</button>
+                <div class="hud-level-tag">LEVEL <span id="hud-level-num">1</span></div>
+                <!-- Turn announcer -->
+                <div id="turn-announcer" class="turn-toast hidden">PLAYER 1's TURN!</div>
             </div>
 
-            <!-- Level Complete Screen -->
+            <!-- LEVEL COMPLETE -->
             <div id="level-complete" class="screen">
-                <div class="glass-panel">
-                    <h2 class="glow-text-small" id="lc-title">HOLE IN ONE!</h2>
-                    <div class="stats-grid">
-                        <div class="stat-box">
-                            <span class="label">Par</span>
-                            <span class="value" id="lc-par">3</span>
-                        </div>
-                        <div class="stat-box" id="p1-final-box">
-                            <span class="label">P1</span>
-                            <span class="value" id="lc-p1-strokes">0</span>
-                        </div>
-                        <div class="stat-box" id="p2-final-box">
-                            <span class="label">P2</span>
-                            <span class="value" id="lc-p2-strokes">0</span>
-                        </div>
+                <div class="panel pop-in text-center">
+                    <h2 class="huge-text glowing">HOLE IN ONE!</h2>
+                    <div id="lc-scoreboard" class="multi-scoreboard">
+                        <!-- Rows injected by JS -->
                     </div>
-                    <p class="subtitle" id="lc-wait-msg">Waiting for opponent...</p>
+                    <div style="margin-top: 20px;">
+                        <button id="btn-next-level" class="super-btn">NEXT LEVEL</button>
+                    </div>
                 </div>
             </div>
+
+            <div id="game-over" class="screen">
+                <div class="panel pop-in text-center">
+                    <h2 class="huge-text">GAME OVER!</h2>
+                    <h3 id="winner-announcement" style="color: gold; margin: 10px 0; font-size: 2rem;">PLAYER 1 WINS!</h3>
+                    <div id="go-scoreboard" class="multi-scoreboard">
+                        <!-- Rows injected by JS -->
+                    </div>
+                    <button class="super-btn btn-nav" data-target="screen-main-menu" style="margin-top:20px;">BACK TO MENU</button>
+                </div>
+            </div>
+
         </div>
     </div>
     
