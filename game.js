@@ -11,6 +11,7 @@ try {
 }
 
 let particles = [];
+let audioBank = null;
 
 // --- DATA ---
 const LEVELS = [
@@ -86,6 +87,7 @@ let state = {
     screen: 'screen-splash',
     mode: 'menu',
     volume: 80,
+    audio: { master: 0.8, music: 0.6 },
     username: 'Guest',
     unlockedBalls: ['standard', 'pro', 'bouncy', 'heavy', 'neon'],
     unlockedColors: ['#ffffff'],
@@ -137,6 +139,95 @@ let canvas, ctx;
 
 const P_COLORS = { p1: '#ffffff', p2: '#ffea00', p3: '#00ccff', p4: '#ff3333' };
 
+// --- AUDIO ---
+function initAudio() {
+    if (audioBank) return;
+    audioBank = {
+        bg: new Audio('sound/background.mp3'),
+        win: new Audio('sound/win.mp3'),
+        click: new Audio('sound/click.mp3'),
+        hit: new Audio('sound/hit_stick.mp3'),
+        bgStarted: false
+    };
+    audioBank.bg.loop = true;
+    audioBank.win.loop = false;
+    audioBank.win.onended = () => resumeBackground();
+    applyVolume();
+}
+
+function applyVolume() {
+    if (!audioBank) return;
+    const master = state.audio.master || 0;
+    const music = state.audio.music || 0;
+    audioBank.bg.volume = master * music;
+    audioBank.win.volume = master * music;
+}
+
+function setMasterVolume(val) {
+    state.audio.master = Math.max(0, Math.min(1, val));
+    applyVolume();
+    saveLocalData();
+}
+
+function setMusicVolume(val) {
+    state.audio.music = Math.max(0, Math.min(1, val));
+    applyVolume();
+    saveLocalData();
+}
+
+function startBackground() {
+    initAudio();
+    if (!audioBank.bgStarted) {
+        audioBank.bgStarted = true;
+        audioBank.bg.currentTime = 0;
+        audioBank.bg.play().catch(() => { audioBank.bgStarted = false; });
+    } else {
+        audioBank.bg.play().catch(() => {});
+    }
+}
+
+function pauseBackground() {
+    if (!audioBank) return;
+    audioBank.bg.pause();
+}
+
+function resumeBackground() {
+    if (!audioBank) return;
+    applyVolume();
+    audioBank.bg.play().catch(() => {});
+}
+
+function playWinMusic() {
+    initAudio();
+    pauseBackground();
+    audioBank.win.currentTime = 0;
+    audioBank.win.volume = (state.audio.master || 0) * (state.audio.music || 0);
+    audioBank.win.play().catch(() => {});
+}
+
+function stopWinMusic() {
+    if (!audioBank || !audioBank.win) return;
+    audioBank.win.pause();
+    audioBank.win.currentTime = 0;
+}
+
+function playSfx(name) {
+    initAudio();
+    if (name === 'bg' || name === 'win') return;
+    const base = audioBank[name];
+    if (!base) return;
+    if (name === 'hit') {
+        base.pause();
+        base.currentTime = 0;
+        base.volume = state.audio.master || 0;
+        base.play().catch(() => {});
+    } else {
+        const clone = base.cloneNode();
+        clone.volume = state.audio.master || 0;
+        clone.play().catch(() => {});
+    }
+}
+
 // --- LOCAL STORAGE ---
 function loadLocalData() {
     try {
@@ -163,11 +254,18 @@ function loadLocalData() {
             if (state.activeMissions.length === 0) populateMissions();
             state.selectedColor = data.selectedColor || '#ffffff';
             state.selectedBallIdx = data.selectedBallIdx || 0;
+            if (data.audioMaster !== undefined) state.audio.master = data.audioMaster;
+            if (data.audioMusic !== undefined) state.audio.music = data.audioMusic;
             if (state.game.players.p1) {
                 state.game.players.p1.ballIdx = state.selectedBallIdx;
                 state.game.players.p1.color = state.selectedColor;
             }
+            const volMaster = document.getElementById('vol-master');
+            if (volMaster) volMaster.value = Math.round(state.audio.master * 100);
+            const volMusic = document.getElementById('vol-music');
+            if (volMusic) volMusic.value = Math.round(state.audio.music * 100);
             refreshPointsDisplay();
+            applyVolume();
         }
     } catch (e) { }
 }
@@ -182,7 +280,9 @@ function saveLocalData() {
             missionStats: state.missionStats,
             activeMissions: state.activeMissions,
             selectedColor: state.selectedColor,
-            selectedBallIdx: state.selectedBallIdx
+            selectedBallIdx: state.selectedBallIdx,
+            audioMaster: state.audio.master,
+            audioMusic: state.audio.music
         }));
     } catch (e) { }
 }
@@ -281,7 +381,6 @@ function refreshProfileStats() {
     const strokes = state.missionStats.totalStrokes || 0;
     const stars = state.missionStats.starsEarned || 0;
 
-    document.getElementById('p-holes').innerText = holes;
     document.getElementById('p-strokes').innerText = strokes;
     document.getElementById('p-stars').innerText = stars;
 
@@ -412,11 +511,12 @@ const showRewardModal = (colorData) => {
     
     swatch.style.backgroundColor = colorData.hex;
     name.innerText = colorData.name.toUpperCase();
-    
+
     // Crucial: Use 'active' class for general screen visibility and remove 'hidden'
     modal.classList.add('active');
     modal.classList.remove('hidden');
     spawnRewardConfetti();
+    playWinMusic();
 
     // Create celebration particles (Fountain)
     for (let i = 0; i < 30; i++) {
@@ -454,6 +554,8 @@ function initUI() {
         const modal = document.getElementById('screen-reward-won');
         modal.classList.remove('active');
         modal.classList.add('hidden');
+        stopWinMusic();
+        resumeBackground();
     });
 
     document.getElementById('btn-spin').addEventListener('click', spinRoulette);
@@ -464,12 +566,16 @@ function initUI() {
             const target = btn.getAttribute('data-target');
             if (target === 'screen-main-menu' && state.mode === 'multi') leaveLobby();
             state.mode = 'menu';
+            if (target !== 'level-complete') {
+                stopWinMusic();
+                resumeBackground();
+            }
             showScreen(target);
         });
     });
 
     // Splash Play
-    document.getElementById('btn-splash-play').addEventListener('click', () => showScreen('screen-main-menu'));
+    document.getElementById('btn-splash-play').addEventListener('click', () => { showScreen('screen-main-menu'); startBackground(); });
 
     // Sync Usernames
     const createNameInput = document.getElementById('create-username-input');
@@ -477,18 +583,18 @@ function initUI() {
     const profileNameInput = document.getElementById('p-username-input');
 
     const updateName = (val) => {
-        state.username = val.trim() || 'Guest';
+        state.username = val || '';
         if (createNameInput) createNameInput.value = state.username;
         if (joinNameInput) joinNameInput.value = state.username;
         if (profileNameInput) profileNameInput.value = state.username;
 
         const av = document.getElementById('p-avatar-circle');
-        if (av) av.innerText = (state.username[0] || 'P').toUpperCase();
+        if (av) av.innerText = ((state.username || 'P')[0] || 'P').toUpperCase();
 
         const mn = document.getElementById('main-mini-name');
         if (mn) mn.innerText = state.username;
         const ma = document.getElementById('main-mini-avatar');
-        if (ma) ma.innerText = (state.username[0] || 'G').toUpperCase();
+        if (ma) ma.innerText = ((state.username || 'G')[0] || 'G').toUpperCase();
 
         saveLocalData();
     };
@@ -497,6 +603,12 @@ function initUI() {
     if (joinNameInput) joinNameInput.addEventListener('input', (e) => updateName(e.target.value));
     if (profileNameInput) profileNameInput.addEventListener('input', (e) => updateName(e.target.value));
     updateName(state.username);
+
+    // Global click SFX and ensure music starts after first interaction
+    document.addEventListener('pointerdown', (e) => {
+        startBackground();
+        if (e.target.closest('button')) playSfx('click');
+    }, { passive: true });
 
     // Nav Bindings
     document.querySelectorAll('.btn-nav').forEach(btn => {
@@ -642,6 +754,8 @@ function initUI() {
     // In-game Pause/Restart
     document.getElementById('btn-pause').addEventListener('click', () => showScreen('screen-levels')); // back to levels
     document.getElementById('btn-next-level').addEventListener('click', () => {
+        stopWinMusic();
+        resumeBackground();
         if (state.mode === 'multi' && state.myRole === 'p1') {
             const nextRound = state.game.matchRoundIdx + 1;
             if (nextRound < state.game.matchLevelOrder.length) {
@@ -661,11 +775,15 @@ function initUI() {
 
     // Sliders
     const volMaster = document.getElementById('vol-master');
-    if (volMaster) volMaster.addEventListener('input', (e) => state.volume = e.target.value);
+    if (volMaster) volMaster.addEventListener('input', (e) => {
+        setMasterVolume((parseInt(e.target.value, 10) || 0) / 100);
+        startBackground();
+    });
 
     const volMusic = document.getElementById('vol-music');
     if (volMusic) volMusic.addEventListener('input', (e) => {
-        // Logic for music volume if needed
+        setMusicVolume((parseInt(e.target.value, 10) || 0) / 100);
+        startBackground();
     });
 }
 
@@ -1368,8 +1486,10 @@ function toastAnnounceTurn() {
     t.style.animation = 'none';
     t.offsetHeight; // trigger reflow
     t.style.animation = null;
-    t.innerText = `${activePlayerKey().toUpperCase()}'s TURN`;
-    t.style.backgroundColor = P_COLORS[activePlayerKey()];
+    const role = activePlayerKey();
+    const name = state.game.players[role]?.name || role.toUpperCase();
+    t.innerText = `${name.toUpperCase()}'S TURN`;
+    t.style.backgroundColor = P_COLORS[role];
 }
 
 function advanceTurn() {
@@ -1464,6 +1584,8 @@ async function refreshLeaderboard(lvlIdx) {
 }
 
 function showLevelComplete() {
+    playWinMusic();
+
     const sb = document.getElementById('lc-scoreboard');
     if (sb) sb.innerHTML = '';
 
@@ -1598,6 +1720,7 @@ function setupInput() {
         const pwr = Math.min(Math.sqrt(dx * dx + dy * dy) * CONFIG.powerMultiplier, CONFIG.maxPower);
 
         if (pwr > 0.8) {
+            playSfx('hit');
             const pk = activePlayerKey();
             const p = state.game.players[pk];
             p.prevX = p.x; p.prevY = p.y; // for water
@@ -1908,6 +2031,7 @@ window.onload = () => {
     ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth; canvas.height = window.innerHeight;
     initUI(); setupInput(); updateCamera();
+    startBackground();
     window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; updateCamera(); });
     loop();
 };
