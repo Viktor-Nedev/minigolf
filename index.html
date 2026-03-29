@@ -52,9 +52,9 @@
                         <span class="card-icon">⚽</span>
                         <span class="card-title">BALLS</span>
                     </button>
-                    <button class="menu-card btn-nav delay-4" data-target="screen-missions" style="--card-color: #9C27B0;">
-                        <span class="card-icon">📜</span>
-                        <span class="card-title">MISSIONS</span>
+                    <button class="menu-card btn-nav delay-4" data-target="screen-leaderboard" style="--card-color: #FF5722;">
+                        <span class="card-icon">🏆</span>
+                        <span class="card-title">LEADERBOARD</span>
                     </button>
                 </div>
             </div>
@@ -138,7 +138,8 @@
                 <h2 class="page-title">MULTIPLAYER CAFE</h2>
                 
                 <div id="mp-join-section" class="panel slide-up">
-                    <p>Enter a room code to join or create a new group!</p>
+                    <p>Enter your name and a room code to play with friends!</p>
+                    <input type="text" id="username-input" placeholder="Your Name (e.g. Viktor)" class="fun-input" maxlength="12">
                     <input type="text" id="room-input" placeholder="Room Code (e.g. party1)" class="fun-input">
                     <button id="btn-join-room" class="super-btn small-btn">JOIN / CREATE</button>
                     <p id="mp-status" class="status-msg">Disconnected.</p>
@@ -252,6 +253,18 @@
                         <div class="stat-box"><span>Holes Played</span><strong>12</strong></div>
                         <div class="stat-box"><span>Total Strokes</span><strong>45</strong></div>
                         <div class="stat-box"><span>Balls Unlocked</span><strong>4/5</strong></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 10. LEADERBOARD -->
+            <div id="screen-leaderboard" class="screen">
+                <button class="back-btn btn-nav" data-target="screen-main-menu">↩ BACK</button>
+                <h2 class="page-title">GLOBAL RANKING</h2>
+                <div class="panel leaderboard-panel">
+                    <div id="lb-list" class="leaderboard-list">
+                        <p>Loading ranking...</p>
+                        <!-- Populated by JS -->
                     </div>
                 </div>
             </div>
